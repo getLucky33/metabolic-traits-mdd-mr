@@ -4,3 +4,10 @@
 results/figures/*
 results/figure_checksums.tsv
 !results/figures/.gitkeep
+data-local/
+results/analysis/
+analysis/manifests/*.local.tsv
+__pycache__/
+*.pyc
+renv/library/
+renv/staging/

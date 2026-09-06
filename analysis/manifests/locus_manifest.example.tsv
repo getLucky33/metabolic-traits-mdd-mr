@@ -1,0 +1,2 @@
+locus_key	trait	locus_id	chr	lead_rsid	lead_pos	window_file
+Example_metabolic_trait__locus001	Example_metabolic_trait	locus001	1	rs123456	1000000	data-local/coloc/Example_metabolic_trait__locus001_window.tsv

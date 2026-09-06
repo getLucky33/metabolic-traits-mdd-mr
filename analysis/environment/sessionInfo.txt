@@ -1,0 +1,22 @@
+Snapshot date: 2026-08-15
+R version 4.5.1 (2025-06-13 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 10 x64 (build 19045)
+Time zone: Asia/Shanghai
+
+Attached analysis packages:
+future.apply_1.20.2
+future_1.75.0
+ieugwasr_1.1.0
+MRPRESSO_1.0
+MendelianRandomization_0.10.0
+TwoSampleMR_0.7.9
+data.table_1.18.4
+
+Additional colocalisation package:
+coloc_5.2.3
+
+External tools:
+PLINK v1.9.0-b.7.11 64-bit (19 Aug 2025)
+bcftools 1.24
+Python 3.13.3

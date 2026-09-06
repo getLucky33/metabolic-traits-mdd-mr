@@ -1,0 +1,30 @@
+{
+  "R": {
+    "Version": "4.5.1",
+    "Repositories": [
+      {"Name": "CRAN", "URL": "https://cloud.r-project.org"}
+    ]
+  },
+  "Packages": {
+    "data.table": {"Package": "data.table", "Version": "1.18.4", "Source": "Repository", "Repository": "CRAN"},
+    "ggplot2": {"Package": "ggplot2", "Version": "4.0.3", "Source": "Repository", "Repository": "CRAN"},
+    "patchwork": {"Package": "patchwork", "Version": "1.3.2", "Source": "Repository", "Repository": "CRAN"},
+    "scales": {"Package": "scales", "Version": "1.4.0", "Source": "Repository", "Repository": "CRAN"},
+    "MendelianRandomization": {"Package": "MendelianRandomization", "Version": "0.10.0", "Source": "Repository", "Repository": "CRAN"},
+    "ieugwasr": {"Package": "ieugwasr", "Version": "1.1.0", "Source": "Repository", "Repository": "CRAN"},
+    "coloc": {"Package": "coloc", "Version": "5.2.3", "Source": "Repository", "Repository": "CRAN"},
+    "future": {"Package": "future", "Version": "1.75.0", "Source": "Repository", "Repository": "CRAN"},
+    "future.apply": {"Package": "future.apply", "Version": "1.20.2", "Source": "Repository", "Repository": "CRAN"},
+    "TwoSampleMR": {
+      "Package": "TwoSampleMR", "Version": "0.7.9", "Source": "GitHub",
+      "RemoteType": "github", "RemoteHost": "api.github.com", "RemoteUsername": "MRCIEU",
+      "RemoteRepo": "TwoSampleMR", "RemoteRef": "v0.7.9"
+    },
+    "MRPRESSO": {
+      "Package": "MRPRESSO", "Version": "1.0", "Source": "GitHub",
+      "RemoteType": "github", "RemoteHost": "api.github.com", "RemoteUsername": "rondolab",
+      "RemoteRepo": "MR-PRESSO", "RemoteRef": "3e3c92d7eda6dce0d1d66077373ec0f7ff4f7e87",
+      "RemoteSha": "3e3c92d7eda6dce0d1d66077373ec0f7ff4f7e87"
+    }
+  }
+}

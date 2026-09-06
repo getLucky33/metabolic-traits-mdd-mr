@@ -1,0 +1,13 @@
+component	version	source
+R	4.5.1	R Project
+data.table	1.18.4	CRAN
+TwoSampleMR	0.7.9	MRCIEU
+MendelianRandomization	0.10.0	CRAN
+MRPRESSO	1.0	rondolab/MR-PRESSO commit 3e3c92d7eda6dce0d1d66077373ec0f7ff4f7e87
+ieugwasr	1.1.0	CRAN
+coloc	5.2.3	CRAN
+future	1.75.0	CRAN
+future.apply	1.20.2	CRAN
+PLINK	1.9.0-b.7.11	PLINK 1.9
+bcftools	1.24	htslib/bcftools
+Python	3.13.3	Python Software Foundation

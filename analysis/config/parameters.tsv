@@ -1,0 +1,24 @@
+parameter	value	scope	note
+metabolite_common_p	5e-8	instrument selection	Common and low-frequency variants
+metabolite_rare_maf	0.001	instrument selection	Rare-variant boundary
+metabolite_rare_p	6.25e-10	instrument selection	Tambets study threshold for MAF below 0.1%
+mdd_instrument_p	5e-8	instrument selection	MDD instruments
+clump_r2	0.001	instrument selection	1000 Genomes phase 3 European reference
+clump_kb	10000	instrument selection	PLINK window in kilobases
+f_min	10	instrument selection	Per-variant F=(beta/se)^2
+harmonise_primary_action	2	MR	Allele-frequency-based handling of palindromic variants
+harmonise_sensitivity_action	3	MR	Remove all palindromic variants
+family_size	249	primary and reverse MR	Bonferroni family fixed before analysis
+presso_screen_nb	1000	MR-PRESSO	Full-trait screening only
+presso_candidate_nb	10000	MR-PRESSO	Formal candidate rerun minimum
+presso_seed	20260815	MR-PRESSO	Fixed seed
+steiger_prevalence_grid	0.08,0.15,0.20	Steiger	MDD prevalence sensitivity values
+broad_pleiotropy_definition	>5 traits	robustness	Variant used as an instrument for more than five metabolic traits
+coloc_p1	1e-4	colocalisation	Prior probability that a variant affects trait 1
+coloc_p2	1e-4	colocalisation	Prior probability that a variant affects trait 2
+coloc_p12_grid	1e-6,5e-6,1e-5,1e-4	colocalisation	Primary p12 is 5e-6
+coloc_min_snps	50	colocalisation	Minimum comparable variants after harmonisation and deduplication
+palindrome_eaf_exclusion	0.08	colocalisation	Exclude when either EAF is within 0.08 of 0.5
+proxy_r2	0.8	colocalisation QC	PLINK European-reference proxy threshold
+mhc_interval_grch38	chr6:25000000-34000000	colocalisation QC	Excluded from positive classification
+finngen_family_size	15	FinnGen cross-outcome comparison	BH-FDR and Bonferroni over the locked 15 traits

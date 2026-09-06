@@ -1,0 +1,11 @@
+stage	principal_outputs	manuscript_or_figure_use
+01_select_instruments.R	*_final_ivs.tsv; instrument_selection_qc.tsv	Instrument counts and strength/LD coverage audit
+02_harmonise_forward.R	harmonised_main_*.rds; harmonised_noukbb_*.rds; action-3 RDS; harmonisation_qc.tsv	Forward-MR inputs and allele-harmonisation audit
+03_run_forward_mr.R	mr_main_summary.tsv; mr_main_long.tsv; mr_sensitivity.tsv; mr_noukbb_summary.tsv; mr_a3_summary.tsv; mr_leaveoneout.tsv	Primary MR estimates; Figure 2; sensitivity tables
+00_prepare_reverse_associations.py	mdd_iv_metabolite_assoc.tsv	Reverse-MR harmonisation input
+04_run_reverse_mr.R	reverse_mr_summary.tsv; reverse_mr_long.tsv; reverse_mr_sensitivity.tsv; reverse_mr_a3_summary.tsv; reverse_leaveoneout.tsv	Reverse-direction evidence; Figure 3
+05_run_robustness.R	robustness_summary.tsv; presso_rerun_10000.tsv; broad_pleiotropy_snps.tsv; hotspot_region_snps.tsv	Candidate robustness and evidence grouping
+06_run_finngen.R	finngen_r13_mr_results.tsv; finngen_r13_mr_methods.tsv; finngen_r13_admission_and_tool_loss.tsv	FinnGen cross-outcome comparison
+07_run_coloc_abf.R	loci_coloc_results.tsv; loci_status.tsv; loci_flow.tsv; loci_final_snps.tsv	ABF posterior grid and full locus flow
+08_classify_coloc.R	loci_classification.tsv; class_summary.tsv; lead_proxy_qc.tsv	Five-label locus classification; Figure 4
+make_figures.R	Figures 1-4 in PDF/SVG/PNG; figure_checksums.tsv	Journal figures and reporting-layer integrity checks
