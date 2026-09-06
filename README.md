@@ -1,5 +1,7 @@
 # Circulating metabolic traits and major depressive disorder: reproducibility code
 
+[![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
+
 This repository accompanies the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. It is a minimal, self-contained reporting bundle: one deterministic R script regenerates Figures 1-4 from the frozen aggregate tables in `data/derived/` and checks the reported evidence counts.
 
 ## Reproduce
