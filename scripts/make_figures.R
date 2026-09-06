@@ -52,6 +52,13 @@ save_gg <- function(plot, stem, width, height) {
   dev.off()
 }
 
+manifest <- fread(file.path(DATA, "data_manifest.tsv"))
+manifest_paths <- file.path(DATA, manifest$file)
+if (any(!file.exists(manifest_paths)) ||
+    any(tolower(unname(tools::md5sum(manifest_paths))) != tolower(manifest$md5))) {
+  stop("A released input is missing or does not match data_manifest.tsv")
+}
+
 sot <- fread(file.path(DATA, "study_counts.tsv"))
 sotv <- function(key) {
   value <- sot[id == key, value]

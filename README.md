@@ -16,7 +16,7 @@ From the repository root:
 Rscript scripts/make_figures.R
 ```
 
-The script writes PDF, SVG, and 600-dpi PNG files to `results/figures/` and a checksum manifest to `results/figure_checksums.tsv`. It fails if the frozen inputs are incomplete, trait labels are not unique/full-length, evidence-stage counts disagree, or an expected output is absent.
+The script verifies the released-input hashes, writes PDF, SVG, and 600-dpi PNG files to `results/figures/`, and creates `results/figure_checksums.tsv`. It fails if an input hash changes, the frozen inputs are incomplete, trait labels are not unique/full-length, evidence-stage counts disagree, or an expected output is absent.
 
 GitHub Actions runs the same command in a clean Linux environment on every push.
 
