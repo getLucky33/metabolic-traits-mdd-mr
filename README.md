@@ -7,7 +7,7 @@ Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qi
 The repository has two reproducibility layers:
 
 1. `scripts/make_figures.R` regenerates Figures 1–4 from the released aggregate tables.
-2. `analysis/` contains portable code for instrument selection, forward and reverse Mendelian randomization (MR), sensitivity analyses, FinnGen cross-outcome comparison, and ABF colocalization. These stages require the provider-controlled GWAS and reference files described in `data/ACCESS.md`; those files are not redistributed.
+2. `analysis/` contains portable code for instrument selection, forward and reverse Mendelian randomization (MR), sensitivity analyses, FinnGen cross-outcome comparison, and ABF colocalization. These stages require the original third-party GWAS and reference files described in `data/ACCESS.md`; those files are not duplicated in this repository.
 
 ## What can be run from a clean clone
 
@@ -43,7 +43,7 @@ Frozen parameters are listed in `analysis/config/parameters.tsv`. The mapping be
 
 ## Reproducibility boundary
 
-The public repository does not include original GWAS rows, individual-level records, LD panels, dbSNP VCF/BCF files, licensed regional extracts, credentials or unpublished review material. Consequently, a clone alone reproduces the figures and synthetic checks; a full numerical rerun additionally requires lawful acquisition of the same upstream resources.
+The public repository does not include original GWAS rows, individual-level records, LD panels, dbSNP VCF/BCF files, licensed regional extracts, credentials or unpublished review material. Consequently, a clone alone reproduces the figures and synthetic checks; a full numerical rerun additionally requires the upstream resources listed in `data/ACCESS.md`, which provides the exact public accession range, persistent dataset identifier, filenames and official access links.
 
 The FinnGen analysis is a cross-outcome comparison, not an independent replication of clinical MDD. Directional concordance does not establish a shared causal mechanism. The single-variant ABF model is not a substitute for multi-signal fine-mapping.
 

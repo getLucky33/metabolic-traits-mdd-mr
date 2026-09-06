@@ -1,3 +1,3 @@
 outcome	file	ncase	ncontrol	frq_case_col	frq_control_col
-main	data-local/mdd/daner_main.tsv.gz	412305	1588397	FRQ_A_412305	FRQ_U_1588397
-noUKBB	data-local/mdd/daner_no_ukbb.tsv.gz	357636	1281936	FRQ_A_357636	FRQ_U_1281936
+main	data-local/mdd/daner_pgc_mdd_no23andMe_eur_hg19_v3.49.24.11.neff.gz	412305	1588397	FRQ_A_412305	FRQ_U_1588397
+noUKBB	data-local/mdd/daner_pgc_mdd_no23andMe-noUKBB_eur_hg19_v3.49.24.11.neff.gz	357636	1281936	FRQ_A_357636	FRQ_U_1281936

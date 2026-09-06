@@ -1,3 +1,3 @@
 trait	source_file	source_type	rsid_map_file
-Example_metabolic_trait	data-local/metabolite/GCST_example.tsv.gz	metabolite	data-local/maps/Example_metabolic_trait_rsid_map.tsv
-Major_depressive_disorder	data-local/mdd/daner_main.tsv.gz	mdd	
+Acetate	data-local/metabolite/GCST90451106.tsv.gz	metabolite	data-local/maps/Acetate_rsid_map.tsv
+Major_depressive_disorder	data-local/mdd/daner_pgc_mdd_no23andMe_eur_hg19_v3.49.24.11.neff.gz	mdd	""
