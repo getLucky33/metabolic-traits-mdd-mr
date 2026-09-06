@@ -1,0 +1,8 @@
+file	rows	sha256	role
+evidence_summary.tsv	15	303c343fd000c5e64eb6e70f24f124c1837bc4dab75dbb9df133167b6a493480	Aggregate 15-trait evidence matrix
+forest_estimates.tsv	15	9f0a06f7a386897d866b97ddca11e7f1552a5cbf518cd0a9856e6151e4ff4223	Aggregate estimates used in Figure 2
+reverse_mr_no_ukbb.tsv	15	a646f403bcd67989c23f52baf20bb301268f66e4ed15e8176f1b05a43cda1e4c	UK Biobank-excluded reverse-MR labels used in Figure 3
+reverse_mr_primary.tsv	15	b56015b0577b689b33770af79c057c18e159cd6e2446a1f3b9847ff2ee5829f9	Primary reverse-MR screen labels used in Figure 3
+study_counts.tsv	25	9d5cb11df3ec44b1b1f02decce52af871c11bb52cdf855bf9abc3387bb978bff	Frozen counts used in Figures 1 and 4
+table1_design.tsv	4	1cfac03ed277c56d06957315b5e49a2ffc48fb85806f12e633ab03af07c0a5f7	GWAS design summary used in the manuscript table
+trait_labels.tsv	15	75d33e2d55498070fe10f72ea897a4e1e23fff035b0d6d45d0941efd5f3458f9	Journal-facing full trait names

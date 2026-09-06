@@ -1,0 +1,16 @@
+display_order	trait_id	trait_display
+1	Ratio_of_monounsaturated_fatty_acids_to_total_fatty_acids	Monounsaturated fatty acids/total fatty acids ratio
+2	Ratio_of_polyunsaturated_fatty_acids_to_monounsaturated_fatty_acids	Polyunsaturated fatty acids/monounsaturated fatty acids ratio
+3	GlycA	Glycoprotein acetyls
+4	Ratio_of_polyunsaturated_fatty_acids_to_total_fatty_acids	Polyunsaturated fatty acids/total fatty acids ratio
+5	Cholesteryl_esters_to_total_lipids_ratio_in_very_small_VLDL	Cholesteryl esters/total lipids ratio in very small very-low-density lipoprotein
+6	Triglycerides_to_total_lipids_ratio_in_very_large_HDL	Triglycerides/total lipids ratio in very large high-density lipoprotein
+7	Cholesterol_to_total_lipids_ratio_in_large_HDL	Cholesterol/total lipids ratio in large high-density lipoprotein
+8	Cholesterol_in_very_large_HDL	Cholesterol in very large high-density lipoprotein
+9	Monounsaturated_fatty_acids	Monounsaturated fatty acids
+10	Cholesterol_to_total_lipids_ratio_in_very_large_VLDL	Cholesterol/total lipids ratio in very large very-low-density lipoprotein
+11	Triglycerides_to_total_lipids_ratio_in_very_small_VLDL	Triglycerides/total lipids ratio in very small very-low-density lipoprotein
+12	Cholesterol_to_total_lipids_ratio_in_medium_VLDL	Cholesterol/total lipids ratio in medium very-low-density lipoprotein
+13	Free_cholesterol_in_very_large_HDL	Free cholesterol in very large high-density lipoprotein
+14	Cholesteryl_esters_to_total_lipids_ratio_in_medium_VLDL	Cholesteryl esters/total lipids ratio in medium very-low-density lipoprotein
+15	Free_cholesterol_to_total_lipids_ratio_in_medium_VLDL	Free cholesterol/total lipids ratio in medium very-low-density lipoprotein

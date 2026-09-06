@@ -1,0 +1,6 @@
+.Rhistory
+.RData
+.Rproj.user/
+results/figures/*
+results/figure_checksums.tsv
+!results/figures/.gitkeep

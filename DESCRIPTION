@@ -1,0 +1,10 @@
+Package: metabolictraitsMDDrepro
+Type: Project
+Title: Reproduce the Manuscript Figures from Frozen Aggregate Inputs
+Version: 0.1.0
+Authors@R: c(person("Zhouyi", "Wang", role = c("aut", "cre"), email = "wangzhouyi1991@163.com"), person("Qingmei", "Liu", role = "aut"))
+Description: Deterministic generation and integrity checks for Figures 1-4 of a Mendelian-randomization evidence assessment.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.3)
+Imports: data.table, ggplot2, patchwork, scales

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this code or derived reporting bundle, please cite the associated manuscript and this repository release."
+title: "Reproducibility code for circulating metabolic traits and major depressive disorder"
+type: software
+version: 0.1.0
+date-released: 2026-09-06
+authors:
+  - family-names: Wang
+    given-names: Zhouyi
+    email: wangzhouyi1991@163.com
+  - family-names: Liu
+    given-names: Qingmei
+license: MIT
