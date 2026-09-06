@@ -1,5 +1,5 @@
-# Scientific Reports figure redesign.
-# Presentation only: every number and classification is read from frozen project files.
+# Generate Figures 1–4 for the Scientific Reports submission.
+# Values and evidence classifications come from the frozen project files.
 
 suppressPackageStartupMessages({
   library(data.table)
@@ -102,9 +102,9 @@ t2[, .(display_order = .I, trait_id = trait, trait_display = figure_full_name(tr
 t2[, group_label := fifelse(proposed_group == "priority_replication",
                              "Priority reporting group", "Secondary reporting group")]
 
-# Figure 1: two-source study map with converging inputs and explicit evidence layers.
-# The layout borrows the visual grammar of high-level workflow figures without
-# reproducing another paper's methods, wording or artwork.
+# Figure 1: study inputs and evidence stages.
+# This study-specific diagram uses standard workflow conventions; it does not
+# reproduce another paper's analysis, wording, or artwork.
 draw_figure1 <- function() {
   grid.newpage()
   pushViewport(viewport(x = 0.5, y = 0.5, width = 0.95, height = 0.97))
@@ -286,7 +286,7 @@ p2 <- ggplot(f2, aes(estimate, trait_display, colour = dataset, shape = dataset)
         axis.text.y = element_text(size = 8.1), panel.spacing.y = unit(3, "mm"))
 save_gg(p2, "Figure_2", 13.0, 8.6)
 
-# Figure 3: evidence matrix; text remains the primary encoding and colour is redundant.
+# Figure 3: evidence matrix. Text carries each category; colour repeats it.
 rev_main <- fread(file.path(DATA, "reverse_mr_primary.tsv"))
 rev_noukbb <- fread(file.path(DATA, "reverse_mr_no_ukbb.tsv"))
 setkey(rev_main, trait); setkey(rev_noukbb, trait)
@@ -343,7 +343,7 @@ p3 <- ggplot(m3, aes(layer, trait_display, fill = state, label = value)) +
   geom_vline(xintercept = c(2.5, 6.5, 8.5, 10.5), colour = "#AAB5BC", linewidth = 0.35)
 save_gg(p3, "Figure_3", 12.2, 8.5)
 
-# Figure 4: proportional evidence attrition with exact counts printed; no funnel-area encoding.
+# Figure 4: evidence attrition with exact counts; panel area does not encode counts.
 stage1 <- data.table(
   class = factor(c("Robust", "Prior-sensitive", "Distinct signal", "Trait-specific/low power", "Inconclusive"),
                  levels = c("Robust", "Prior-sensitive", "Distinct signal", "Trait-specific/low power", "Inconclusive")),
