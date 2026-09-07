@@ -1,6 +1,6 @@
 # Data access and redistribution boundary
 
-The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. The provider terms and current release schemas were checked on 2026-09-07. Zhouyi Wang confirmed the responsible-author attestation below for the exact current release schemas and publication boundary.
+The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value; it contains no variant-level fields. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. The provider terms and current release schemas were checked on 2026-09-07. Zhouyi Wang confirmed the responsible-author attestation below for the release schemas and publication boundary.
 
 ## Verification status (checked 2026-09-07)
 
@@ -18,7 +18,7 @@ The files under `data/derived/` are compact, author-created aggregate reporting 
 
 > 我确认本仓库仅公开作者生成的位点级与先验敏感性聚合结果，不含 PGC 或 FinnGen 原始、区域或可还原的 SNP 级汇总统计；本项目通过官方渠道获取并接受适用条款，用途为非商业科学研究，已履行不识别、引用与 FinnGen 致谢要求，并同意按 ACCESS.md 所列边界公开。
 
-**Attested aggregate-manifest snapshot:** `data/derived/data_manifest.tsv`, SHA-256 `7aa9102539c535cee2c693842a204e0f1042095577a97511a01887f5e9b555c7`.
+**Attested aggregate-manifest snapshot:** `data/derived/data_manifest.tsv`, SHA-256 `da0db54ea80e4b54cae7b433d6660449b2559cae59f7f88c2414ffd28faeafe4`.
 
 **Blanket upstream redistribution clearance:** NOT CLAIMED.
 

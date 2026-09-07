@@ -1,6 +1,13 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3 local release checks were completed on 2026-09-07. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3 and v0.2.4 local release checks were completed on 2026-09-07. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.4 local verification (2026-09-07)
+
+- Figure 2 now displays 45 estimates: primary PGC, PGC excluding UK Biobank and FinnGen R13 results for each of the 15 forward candidates.
+- The 15-row `forward_noukbb_15.tsv` table matches the candidate subset of the frozen 249-trait UK Biobank-excluded forward-MR result. All 15 estimates are directionally concordant with the primary PGC estimates, all have P < 0.05 and 10 have P < 0.05/249.
+- Figure 2 source rows retain dataset-specific instrument counts, beta, standard error and P value; plotted odds ratios and confidence limits are calculated as `exp(beta)` and `exp(beta ± 1.96 × SE)`.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.4 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.3 local verification (2026-09-07)
 

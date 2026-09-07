@@ -39,7 +39,11 @@ jobs:
       - name: Reproduce figures and checks
         run: Rscript scripts/make_figures.R --out results/figures
       - name: Confirm figure source tables and checksums
-        run: test -s results/figures/Figure_2_plot_data.tsv && test -s results/figures/Figure_3_matrix_data.tsv && test -s results/figures/figure_checksums.tsv
+        run: |
+          test -s results/figures/Figure_2_plot_data.tsv
+          test -s results/figures/Figure_3_matrix_data.tsv
+          test -s results/figures/figure_checksums.tsv
+          test "$(tail -n +2 results/figures/Figure_2_plot_data.tsv | wc -l)" -eq 45
       - name: Confirm released aggregate inputs were not rewritten
         run: git diff --exit-code -- data/derived
 

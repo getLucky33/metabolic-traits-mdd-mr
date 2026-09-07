@@ -4,7 +4,7 @@
 
 Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu.
 
-Version 0.2.3 has three reproducibility layers:
+Version 0.2.4 has three reproducibility layers:
 
 1. `scripts/make_figures.R` regenerates Figures 1–4 from the released aggregate tables.
 2. Released aggregate inputs replay the complete 249-trait four-level screens and the 6,434-row colocalization classification, with fixed count assertions.
@@ -27,7 +27,7 @@ Rscript analysis/tests/smoke_test.R
 
 `make_figures.R` verifies the aggregate-input hashes and regenerates PDF, SVG and 600-dpi PNG figures. `08_classify_coloc.R` must recover `14/87/822/3430/2081` records in the five frozen classes. `smoke_test.R` uses temporary synthetic data to exercise TwoSampleMR harmonization, random-effects IVW, MR-PRESSO parsing and the four-prior `coloc.abf` path. Synthetic results are never mixed with manuscript results.
 
-Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact Figure 2 plotting values, Figure 3 matrix values and a checksum file beside the figures.
+Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact Figure 2 plotting values, Figure 3 matrix values and a checksum file beside the figures. Figure 2 includes the primary PGC result, the PGC sensitivity analysis excluding UK Biobank and the FinnGen R13 alternative outcome for each of the 15 forward candidates.
 
 On each push or pull request, the configured GitHub Actions workflow runs figure reproduction, code parsing, a secret/path scan and the synthetic analysis smoke test in a clean Linux environment.
 
@@ -64,6 +64,7 @@ The public repository does not include original GWAS rows, individual-level reco
 Released audit tables include:
 
 - three 249-trait screens;
+- the 15 candidate-level forward-MR estimates for the PGC outcome excluding UK Biobank used in Figure 2;
 - the 6,434-row locus manifest and ABF classification inputs/outputs;
 - the 101-row integrated evidence table and FinnGen tool-loss/cross-outcome summaries; and
 - exploratory SuSiE status, binding and stopping summaries.

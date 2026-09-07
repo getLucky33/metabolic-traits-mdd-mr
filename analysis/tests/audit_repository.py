@@ -101,8 +101,8 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.3" not in description or "version: 0.2.3" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.3")
+if "Version: 0.2.4" not in description or "version: 0.2.4" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.4")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
@@ -137,6 +137,41 @@ for name, expected in screen_expectations.items():
         errors.append(f"{name} must contain 249 unique traits")
     if counts(rows, "screen_level") != expected:
         errors.append(f"{name} four-level counts differ from the frozen values")
+
+forward_main = read_tsv("forward_screen_249.tsv")
+forward_noukbb = read_tsv("forward_noukbb_15.tsv")
+forest = read_tsv("forest_estimates.tsv")
+candidate_order = [row["trait"] for row in forest]
+bonferroni_candidates = {
+    row["trait"] for row in forward_main if row["screen_level"] == "bonferroni_hit"
+}
+if (len(forward_noukbb) != 15 or len({row["trait"] for row in forward_noukbb}) != 15 or
+        [row["trait"] for row in forward_noukbb] != candidate_order or
+        set(candidate_order) != bonferroni_candidates):
+    errors.append("UK Biobank-excluded forward results must match the 15 primary candidates in frozen order")
+forest_by_trait = {row["trait"]: row for row in forest}
+noukbb_nominal = 0
+noukbb_bonferroni = 0
+for row in forward_noukbb:
+    try:
+        n_iv = int(row["n_iv"])
+        beta = float(row["ivw_b"])
+        se = float(row["ivw_se"])
+        p_value = float(row["ivw_p"])
+        expected_p = math.erfc(abs(beta / se) / math.sqrt(2))
+        main_beta = float(forest_by_trait[row["trait"]]["b_pgc"])
+    except (KeyError, TypeError, ValueError):
+        errors.append(f"invalid UK Biobank-excluded forward row: {row.get('trait', '<missing>')}")
+        continue
+    if not (n_iv > 0 and math.isfinite(beta) and math.isfinite(se) and se > 0 and
+            math.isfinite(p_value) and 0 < p_value <= 1 and abs(p_value - expected_p) < 1e-12):
+        errors.append(f"invalid UK Biobank-excluded estimate or P value: {row['trait']}")
+    if beta * main_beta <= 0:
+        errors.append(f"UK Biobank-excluded direction differs from the primary estimate: {row['trait']}")
+    noukbb_nominal += p_value < 0.05
+    noukbb_bonferroni += p_value < 0.05 / 249
+if noukbb_nominal != 15 or noukbb_bonferroni != 10:
+    errors.append("UK Biobank-excluded sensitivity counts must remain 15 nominal and 10 at 0.05/249")
 
 locus_manifest = read_tsv("coloc_locus_manifest.tsv")
 classification = read_tsv("coloc_classification.tsv")

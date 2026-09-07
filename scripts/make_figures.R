@@ -246,17 +246,24 @@ draw_figure1(); dev.off()
 svg(file.path(OUT, "Figure_1.svg"), width = 7.2, height = 9.2, family = FONT, bg = "white")
 draw_figure1(); dev.off()
 
-# Figure 2: paired forest plot on the interpretable odds-ratio scale.
+# Figure 2: three-outcome forest plot on the interpretable odds-ratio scale.
 forest <- fread(file.path(DATA, "forest_estimates.tsv"))
 forest <- forest[match(t2$trait, trait)]
 stopifnot(identical(forest$trait, t2$trait), !anyNA(forest$b_pgc), !anyNA(forest$b_fg))
 forward_screen <- fread(file.path(DATA, "forward_screen_249.tsv"))
+noukbb_screen <- fread(file.path(DATA, "forward_noukbb_15.tsv"))
 finngen_screen <- fread(file.path(DATA, "finngen_cross_outcome_15.tsv"))
+if (nrow(noukbb_screen) != 15L || uniqueN(noukbb_screen$trait) != 15L ||
+    !setequal(noukbb_screen$trait, t2$trait)) {
+  stop("The UK Biobank-excluded Figure 2 source must contain the 15 unique forward candidates")
+}
 forward_plot_source <- forward_screen[match(t2$trait, trait)]
+noukbb_plot_source <- noukbb_screen[match(t2$trait, trait)]
 finngen_plot_source <- finngen_screen[match(t2$trait, trait)]
 same_num <- function(a, b) all(is.finite(a)) && all(is.finite(b)) &&
   max(abs(as.numeric(a) - as.numeric(b))) < 1e-12
 if (!identical(forward_plot_source$trait, t2$trait) ||
+    !identical(noukbb_plot_source$trait, t2$trait) ||
     !identical(finngen_plot_source$trait, t2$trait) ||
     !same_num(forest$b_pgc, forward_plot_source$ivw_b) ||
     !same_num(forest$se_pgc, forward_plot_source$ivw_se) ||
@@ -264,52 +271,73 @@ if (!identical(forward_plot_source$trait, t2$trait) ||
     !same_num(forest$se_fg, finngen_plot_source$fg_se) ||
     !identical(forest$cross_outcome_support_label,
                finngen_plot_source$cross_outcome_support_label)) {
-  stop("Figure 2 values do not match the released forward/FinnGen source tables")
+  stop("Figure 2 values do not match the released primary/FinnGen source tables")
 }
-f2 <- rbind(
-  forest[, .(trait, reporting_group, dataset = "PGC major depression", estimate = exp(b_pgc),
-             lower = exp(b_pgc - 1.96 * se_pgc), upper = exp(b_pgc + 1.96 * se_pgc))],
-  forest[, .(trait, reporting_group, dataset = "FinnGen R13 depression", estimate = exp(b_fg),
-             lower = exp(b_fg - 1.96 * se_fg), upper = exp(b_fg + 1.96 * se_fg))]
+f2_source <- rbind(
+  forest[, .(trait, reporting_group, dataset = "PGC major depression", n_iv = forward_plot_source$n_iv,
+             beta = b_pgc, se = se_pgc, p_value = forward_plot_source$ivw_p)],
+  noukbb_plot_source[, .(trait, reporting_group = forest$reporting_group,
+                         dataset = "PGC excluding UK Biobank", n_iv,
+                         beta = ivw_b, se = ivw_se, p_value = ivw_p)],
+  forest[, .(trait, reporting_group, dataset = "FinnGen R13 depression", n_iv = finngen_plot_source$n_iv,
+             beta = b_fg, se = se_fg, p_value = finngen_plot_source$fg_p)]
 )
+if (nrow(f2_source) != 45L || uniqueN(f2_source, by = c("trait", "dataset")) != 45L ||
+    any(!is.finite(f2_source$n_iv)) || any(f2_source$n_iv <= 0) ||
+    any(!is.finite(f2_source$beta)) || any(!is.finite(f2_source$se)) || any(f2_source$se <= 0) ||
+    any(!is.finite(f2_source$p_value)) || any(f2_source$p_value <= 0 | f2_source$p_value > 1) ||
+    any(abs(f2_source$p_value - 2 * pnorm(-abs(f2_source$beta / f2_source$se))) > 1e-12) ||
+    !identical(sign(noukbb_plot_source$ivw_b) == sign(forest$b_pgc), as.logical(t2$noukbb_ok)) ||
+    sum(noukbb_plot_source$ivw_p < 0.05) != 15L ||
+    sum(noukbb_plot_source$ivw_p < 0.05 / 249) != 10L) {
+  stop("Figure 2 three-dataset source table failed integrity checks")
+}
+f2 <- f2_source[, .(trait, reporting_group, dataset, n_iv, beta, se, p_value,
+                    estimate = exp(beta), lower = exp(beta - 1.96 * se),
+                    upper = exp(beta + 1.96 * se))]
 f2[, trait_display := wrap_trait(figure_full_name(trait))]
 f2[, group_label := fifelse(reporting_group == "priority_reporting",
                              "Priority reporting group", "Secondary reporting group")]
 fwrite(
   f2[, .(trait_id = trait, trait_display = figure_full_name(trait), reporting_group, group_label,
-         dataset, estimate, lower, upper)],
+         dataset, n_iv, beta, se, p_value, estimate, lower, upper)],
   file.path(OUT, "Figure_2_plot_data.tsv"), sep = "\t", eol = "\n"
 )
 f2[, trait_display := factor(trait_display, levels = rev(t2$trait_figure_label))]
-f2[, dataset := factor(dataset, levels = c("PGC major depression", "FinnGen R13 depression"))]
-f2_labels <- forest[, .(
-  trait,
-  reporting_group,
-  estimate_text = sprintf("PGC %.3f (%.3f-%.3f) | FG %.3f (%.3f-%.3f)",
-                          exp(b_pgc), exp(b_pgc - 1.96 * se_pgc), exp(b_pgc + 1.96 * se_pgc),
-                          exp(b_fg), exp(b_fg - 1.96 * se_fg), exp(b_fg + 1.96 * se_fg))
-)]
-f2_labels[, trait_display := factor(wrap_trait(figure_full_name(trait)),
-                                    levels = rev(t2$trait_figure_label))]
-f2_labels[, group_label := fifelse(reporting_group == "priority_reporting",
-                                    "Priority reporting group", "Secondary reporting group")]
-p2 <- ggplot(f2, aes(estimate, trait_display, colour = dataset, shape = dataset)) +
+dataset_levels <- c("PGC major depression", "PGC excluding UK Biobank", "FinnGen R13 depression")
+f2[, dataset := factor(dataset, levels = dataset_levels)]
+f2[, estimate_text := sprintf("%.3f (%.3f-%.3f)", estimate, lower, upper)]
+pd2 <- position_dodge(width = 0.62, reverse = TRUE)
+p2_forest <- ggplot(f2, aes(estimate, trait_display, colour = dataset, shape = dataset)) +
   geom_vline(xintercept = 1, colour = "#7F8B93", linewidth = 0.5, linetype = 2) +
   geom_errorbar(aes(xmin = lower, xmax = upper), orientation = "y", width = 0,
-                position = position_dodge(width = 0.52), linewidth = 0.62) +
-  geom_point(position = position_dodge(width = 0.52), size = 2.25, stroke = 0.3) +
-  geom_text(data = f2_labels, aes(x = 1.145, y = trait_display, label = estimate_text),
-            inherit.aes = FALSE, hjust = 0, family = FONT, size = 2.55, colour = COL$ink) +
+                position = pd2, linewidth = 0.55) +
+  geom_point(position = pd2, size = 2.15, stroke = 0.45) +
   facet_grid(group_label ~ ., scales = "free_y", space = "free_y") +
-  scale_colour_manual(values = c(COL$navy, COL$orange)) +
-  scale_shape_manual(values = c(16, 17)) +
+  scale_colour_manual(values = c(COL$navy, COL$blue, COL$orange), breaks = dataset_levels) +
+  scale_shape_manual(values = c(16, 15, 17), breaks = dataset_levels) +
   scale_x_log10(breaks = c(0.88, 0.92, 0.96, 1.00, 1.04, 1.08, 1.12),
-                limits = c(0.865, 1.285)) +
+                limits = c(0.855, 1.155)) +
   labs(x = "Odds ratio per genetically predicted 1-SD increase (95% CI)", y = NULL) +
   theme_sr(9.3) +
   theme(legend.position = "top", legend.justification = "left",
         axis.text.y = element_text(size = 8.1), panel.spacing.y = unit(3, "mm"))
-save_gg(p2, "Figure_2", 13.0, 8.6)
+p2_values <- ggplot(f2, aes(0, trait_display, colour = dataset, group = dataset)) +
+  geom_text(aes(label = estimate_text), position = pd2, hjust = 0,
+            family = FONT, size = 2.55, show.legend = FALSE) +
+  facet_grid(group_label ~ ., scales = "free_y", space = "free_y") +
+  scale_colour_manual(values = c(COL$navy, COL$blue, COL$orange), breaks = dataset_levels) +
+  scale_x_continuous(limits = c(0, 1), breaks = 0, labels = "OR (95% CI)", position = "top") +
+  coord_cartesian(clip = "off") +
+  theme_sr(9.3) +
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text.y = element_blank(),
+        axis.ticks = element_blank(), axis.text.x.top = element_text(face = "bold", hjust = 0),
+        strip.text = element_text(colour = NA), strip.background = element_rect(fill = NA, colour = NA),
+        legend.position = "none", panel.spacing.y = unit(3, "mm"),
+        plot.margin = margin(7, 24, 7, 7))
+p2 <- p2_forest + p2_values + plot_layout(widths = c(0.69, 0.31), guides = "collect") &
+  theme(legend.position = "top")
+save_gg(p2, "Figure_2", 13.0, 9.3)
 
 # Figure 3: evidence matrix. Text carries each category; colour repeats it.
 rev_main <- fread(file.path(DATA, "reverse_mr_primary.tsv"))
