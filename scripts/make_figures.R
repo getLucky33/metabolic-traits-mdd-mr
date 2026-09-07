@@ -131,11 +131,15 @@ draw_figure1 <- function() {
                gp = gpar(col = COL$grey, lwd = lwd),
                arrow = if (arrow_end) arrow(type = "closed", length = unit(2.1, "mm")) else NULL)
   }
+  connector_path <- function(x, y, arrow_end = TRUE, lwd = 1.45) {
+    grid.lines(x = x, y = y, gp = gpar(col = COL$grey, lwd = lwd),
+               arrow = if (arrow_end) arrow(type = "closed", length = unit(2.1, "mm")) else NULL)
+  }
 
   # Connectors are drawn before cards so their ends remain visually clean.
-  connector(0.27, 0.795, 0.46, 0.716)
-  connector(0.73, 0.795, 0.54, 0.716)
-  connector(0.50, 0.622, 0.50, 0.595, arrow_end = FALSE)
+  connector(0.27, 0.795, 0.46, 0.728)
+  connector(0.73, 0.795, 0.54, 0.728)
+  connector(0.50, 0.617, 0.50, 0.595, arrow_end = FALSE)
   connector(0.18, 0.595, 0.82, 0.595, arrow_end = FALSE)
   connector(0.18, 0.595, 0.18, 0.565)
   connector(0.50, 0.595, 0.50, 0.565)
@@ -144,9 +148,9 @@ draw_figure1 <- function() {
   connector(0.50, 0.395, 0.50, 0.365, arrow_end = FALSE)
   connector(0.82, 0.395, 0.82, 0.365, arrow_end = FALSE)
   connector(0.18, 0.365, 0.82, 0.365, arrow_end = FALSE)
-  connector(0.50, 0.365, 0.50, 0.329)
+  connector_path(c(0.18, 0.075, 0.075, 0.11), c(0.365, 0.365, 0.163, 0.163))
+  connector_path(c(0.79, 0.985, 0.985, 0.84), c(0.670, 0.670, 0.287, 0.287))
   connector(0.50, 0.245, 0.50, 0.218)
-  connector(0.50, 0.115, 0.50, 0.088)
 
   card(
     0.27, 0.865, 0.40, 0.14, "Exposure GWAS",
@@ -155,17 +159,17 @@ draw_figure1 <- function() {
     "#F5DFA7", body_size = 7.7
   )
   card(
-    0.73, 0.865, 0.40, 0.14, "Depression outcome GWAS",
-    paste0("PGC major depression: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls\n",
-           "PGC excluding UK Biobank: ", fmt("pgc_nb_cases"), " / ", fmt("pgc_nb_controls"), "\n",
-           "FinnGen R13 depression: ", fmt("finngen_cases"), " / ", fmt("finngen_controls"), "\n",
-           "Counts are reported as cases / controls"),
-    "#F5DFA7", body_size = 6.3
+    0.73, 0.865, 0.40, 0.14, "Primary depression outcome GWAS",
+    paste0("PGC major depression\n", fmt("pgc_main_cases"), " cases / ",
+           fmt("pgc_main_controls"), " controls"),
+    "#F5DFA7", body_size = 7.7
   )
   card(
-    0.50, 0.670, 0.52, 0.095, "Primary forward Mendelian randomization",
-    paste0("Primary outcome: PGC major depression\n", fmt("n_screen_bonf"), " Bonferroni-significant traits"),
-    "#B9DCEB", body_size = 7.6, border = "#8EB9CC", title_size = 9.5
+    0.50, 0.670, 0.58, 0.105, "Instrument construction and primary forward MR",
+    paste0("Genome-wide significant, LD-clumped instruments\n",
+           "Primary outcome: PGC major depression\n",
+           fmt("n_screen_bonf"), " Bonferroni-significant traits"),
+    "#B9DCEB", body_size = 6.8, border = "#8EB9CC", title_size = 8.8
   )
 
   grid.rect(x = 0.50, y = 0.608, width = 0.26, height = 0.026,
@@ -174,26 +178,27 @@ draw_figure1 <- function() {
             gp = gpar(fontfamily = FONT, fontsize = 8.0, fontface = "bold", col = COL$grey))
   card(
     0.18, 0.480, 0.28, 0.17, "Robustness and sensitivity",
-    "Harmonization checks\nPleiotropy and heterogeneity\nPGC excluding UK Biobank",
-    "#D8E8EF", body_size = 6.9, title_size = 8.0
+    "Harmonization and five estimators\nQ, MR-Egger and MR-PRESSO\nPalindromic-variant sensitivity\nPleiotropic-region and shared-IV exclusions\nPGC excluding UK Biobank",
+    "#D8E8EF", body_size = 5.8, title_size = 7.7
   )
   card(
     0.50, 0.480, 0.28, 0.17, "Directionality",
-    "Steiger directionality test\nReverse Mendelian randomization\nAlternative prevalence assumptions",
-    "#DDD8E9", body_size = 6.9, title_size = 8.4
+    "Steiger directionality test\nReverse MR with two PGC instrument sets\nAlternative prevalence assumptions",
+    "#DDD8E9", body_size = 6.4, title_size = 8.4
   )
   card(
     0.82, 0.480, 0.28, 0.17, "Locus evidence",
-    paste0("Colocalization and regional checks\nConditional / SuSiE exploratory checks\n",
-           fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " have shared-variant posterior support"),
-    "#F4DCCB", body_size = 6.7, title_size = 8.4
+    paste0("ABF colocalization and regional checks\nMHC / complex-region assessment\n",
+           "Exploratory conditional / SuSiE checks\n", fmt("coloc_records"), " analysis-window records\n",
+           fmt("h4_evidence_rows"), " with shared-variant\nposterior support"),
+    "#F4DCCB", body_size = 5.6, title_size = 8.4
   )
   card(
-    0.50, 0.287, 0.68, 0.085, "Alternative-outcome analysis",
-    paste0("FinnGen R13 register-based depression: ", fmt("fg13_dir_same"), "/",
-           fmt("matrix_fg13_rows"), " directionally concordant\n",
-           "Alternative-outcome comparison; not an independent replication"),
-    "#D8E7D7", body_size = 7.0, border = "#AFC7AD", title_size = 8.7
+    0.50, 0.287, 0.68, 0.085, "Separate alternative-outcome analysis",
+    paste0("FinnGen R13 register-based depression: ", fmt("finngen_cases"), " cases / ",
+           fmt("finngen_controls"), " controls\n", fmt("fg13_dir_same"), "/",
+           fmt("matrix_fg13_rows"), " directionally concordant; not an independent replication"),
+    "#D8E7D7", body_size = 6.5, border = "#AFC7AD", title_size = 8.5
   )
   card(
     0.50, 0.163, 0.78, 0.103, "Evidence integration",
@@ -204,35 +209,34 @@ draw_figure1 <- function() {
            fmt("mechanism_eligible_true"), " met the composite mechanism-support criterion"),
     "#C9D8E8", body_size = 7.4, border = "#9CB2C8", title_size = 9.1
   )
-  grid.roundrect(x = 0.50, y = 0.050, width = 0.82, height = 0.055,
-                 r = unit(2, "mm"), gp = gpar(fill = "#F7F4EC", col = "#E1D4B7"))
-  grid.text("Interpretive boundary: directional concordance does not establish a shared causal mechanism.",
-            x = 0.50, y = 0.050,
-            gp = gpar(fontfamily = FONT, fontsize = 7.6, fontface = "bold", col = COL$ink))
   popViewport()
 }
 
 mermaid <- c(
   "flowchart TB",
   paste0("  E[\"Exposure GWAS<br/>", fmt("n_traits_metabolites"), " NMR-derived circulating metabolic traits<br/>N = ", fmt("tambets_meta_eur"), "; Estonian Biobank + UK Biobank\"]"),
-  paste0("  O[\"Depression outcome GWAS<br/>PGC major depression: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls<br/>PGC outcome excluding UK Biobank: ", fmt("pgc_nb_cases"), " / ", fmt("pgc_nb_controls"), "<br/>FinnGen R13 depression: ", fmt("finngen_cases"), " / ", fmt("finngen_controls"), "\"]"),
-  paste0("  P[\"Primary forward Mendelian randomization<br/>", fmt("n_screen_bonf"), " Bonferroni-significant traits\"]"),
-  "  R[\"Robustness and sensitivity<br/>Harmonization; pleiotropy; heterogeneity<br/>PGC outcome excluding UK Biobank\"]",
-  "  D[\"Directionality<br/>Steiger directionality test; reverse Mendelian randomization<br/>Alternative prevalence assumptions\"]",
-  paste0("  L[\"Locus evidence<br/>", fmt("coloc_records"), " trait-specific analysis-window records<br/>", fmt("h4_evidence_rows"), " have shared-variant posterior support\"]"),
-  paste0("  F[\"FinnGen R13 alternative-outcome comparison<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant<br/>Not an independent replication\"]"),
+  paste0("  O[\"Primary depression outcome GWAS<br/>PGC major depression: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls\"]"),
+  paste0("  P[\"Instrument construction and primary forward MR<br/>Genome-wide significant, LD-clumped instruments<br/>", fmt("n_screen_bonf"), " Bonferroni-significant traits\"]"),
+  "  R[\"Robustness and sensitivity<br/>Harmonization and five estimators<br/>Q, MR-Egger, MR-PRESSO and exclusion analyses<br/>PGC outcome excluding UK Biobank\"]",
+  "  D[\"Directionality<br/>Steiger directionality test<br/>Reverse Mendelian randomization with two PGC instrument sets<br/>Alternative prevalence assumptions\"]",
+  paste0("  L[\"Locus evidence<br/>ABF colocalization; regional, MHC and complex-region checks<br/>Exploratory conditional / SuSiE checks<br/>", fmt("coloc_records"), " analysis-window records; ", fmt("h4_evidence_rows"), " with shared-variant posterior support\"]"),
+  paste0("  F[\"Separate FinnGen R13 alternative-outcome analysis<br/>", fmt("finngen_cases"), " cases / ", fmt("finngen_controls"), " controls<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant; not an independent replication\"]"),
   paste0("  G[\"Evidence integration<br/>", fmt("groups_priority"), " priority / ", fmt("groups_secondary"), " secondary<br/>", fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), " met the composite criterion\"]"),
-  "  B[\"Interpretive boundary: directional concordance does not establish a shared causal mechanism\"]",
   "  E --> P",
   "  O --> P",
   "  P --> R",
   "  P --> D",
   "  P --> L",
-  "  R --> F",
-  "  D --> F",
-  "  L --> F",
-  "  F --> G",
-  "  G --> B"
+  "  P --> F",
+  "  R --> G",
+  "  D --> G",
+  "  L --> G",
+  "  F --> G"
+)
+stopifnot(
+  all(c("  P --> R", "  P --> D", "  P --> L", "  P --> F",
+        "  R --> G", "  D --> G", "  L --> G", "  F --> G") %in% mermaid),
+  !any(c("  R --> F", "  D --> F", "  L --> F") %in% mermaid)
 )
 writeBin(
   charToRaw(paste0(paste(mermaid, collapse = "\n"), "\n")),
@@ -246,7 +250,7 @@ draw_figure1(); dev.off()
 svg(file.path(OUT, "Figure_1.svg"), width = 7.2, height = 9.2, family = FONT, bg = "white")
 draw_figure1(); dev.off()
 
-# Figure 2: three-outcome forest plot on the interpretable odds-ratio scale.
+# Figure 2: three-series forest plot on the interpretable odds-ratio scale.
 forest <- fread(file.path(DATA, "forest_estimates.tsv"))
 forest <- forest[match(t2$trait, trait)]
 stopifnot(identical(forest$trait, t2$trait), !anyNA(forest$b_pgc), !anyNA(forest$b_fg))

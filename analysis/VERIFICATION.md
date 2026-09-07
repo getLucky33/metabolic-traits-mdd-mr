@@ -1,6 +1,14 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3 and v0.2.4 local release checks were completed on 2026-09-07. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.5 local verification (2026-09-07)
+
+- Figure 1 now distinguishes the primary PGC outcome from the UK Biobank-excluded sensitivity outcome and the separate FinnGen alternative outcome.
+- Instrument construction, five-estimator and harmonization checks, Q/MR-Egger/MR-PRESSO diagnostics, exclusion analyses, Steiger and reverse MR, ABF/regional/complex-locus checks and exploratory SuSiE are visible in the workflow.
+- Robustness, directionality, locus and FinnGen branches now feed evidence integration in parallel; none is drawn as a prerequisite for the FinnGen analysis.
+- The locus-evidence text is line-wrapped inside its card. PDF, SVG and 600-dpi PNG inspection found no text outside the card boundaries.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.5 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.4 local verification (2026-09-07)
 
