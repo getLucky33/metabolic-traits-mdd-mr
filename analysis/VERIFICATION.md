@@ -1,10 +1,21 @@
 # Verification record
 
-Verification date: 2026-09-06. Runtime: R 4.5.1 on Windows 10 x64 using the versions in `analysis/environment/package-versions.tsv`.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3 local release checks were completed on 2026-09-07. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.3 local verification (2026-09-07)
+
+- The new path-parameterized locus builder reproduced all 6,434 frozen locus rows. All non-path columns and the generated relative window paths matched the released manifest exactly.
+- Replaying `08_classify_coloc.R` from the released aggregate ABF/status/lead-QC inputs reproduced the frozen 6,434-row classification exactly: 14 robust, 87 prior-sensitive, 822 distinct-signal, 3,430 trait-specific/low-power and 2,081 inconclusive records.
+- `Free_cholesterol_in_very_large_HDL__locus119` and `Triglycerides_to_total_lipids_ratio_in_very_small_VLDL__locus166` have leads outside chr6:25–34 Mb but windows that overlap it. Both now test as `inconclusive/mhc_excluded`.
+- The three released 249-row screen tables have frozen four-level distributions of `15/53/35/146`, `122/49/9/69` and `89/67/9/84`.
+- The final-IV QC table contains 249 uniquely mapped trait IDs/display names. The global minimum F is 29.7168760049588, and all 15 Bonferroni candidates have finite I²GX values.
+- The 15-row broad-pleiotropy rerun retained SE and 95% CI. Its before/after beta and P columns match the prior frozen table exactly.
+- A 20-instrument MR-PRESSO smoke test confirmed that `Main MR results$Sd` is parsed into raw/corrected SE and 95% CI fields. The earlier frozen 10,000-run summary did not retain `Sd`, so its released SE/CI fields remain `NA` with a reason and were not inferred from P values.
+- The synthetic MR/colocalization smoke test, release-table audit, R parse check and deterministic Figure 1–4 regeneration passed in the local workspace under R 4.5.1. The v0.2.3 tag and release must point to a commit for which all jobs in `.github/workflows/reproduce.yml` have passed. The corresponding GitHub Actions run is the authoritative remote clean-checkout verification record.
 
 ## Real-data one-trait smoke tests
 
-The portable scripts were run against the private frozen inputs for Acetate. No private input or SNP-level output is included in this repository.
+The portable scripts were run against the private frozen inputs for Acetate. The repository does not include original or regional SNP association-statistic rows; it releases locus-level lead identifiers and aggregate results for audit.
 
 | Check | Instruments | Portable estimate | Frozen estimate | Result |
 |---|---:|---:|---:|---|
@@ -15,7 +26,7 @@ The portable scripts were run against the private frozen inputs for Acetate. No 
 | Reverse random-effects IVW SE | 198 | 0.0088452317405902 | 0.0088452317405902 | exact match |
 | Reverse random-effects IVW P | 198 | 0.000135888019130649 | 0.000135888019130649 | exact match |
 
-The hotspot-removal and Steiger outputs for Acetate also matched the frozen values, including exposure R² `0.00528761794062718` and outcome R² `0.0000505902508865417` at prevalence 0.15.
+The hotspot-removal and Steiger outputs for Acetate also matched the frozen values, including exposure R² `0.00528761794062718` and outcome R² `0.0000505902508865417` at prevalence 0.15. Exposure R² used the fixed maximum exposure sample size of 599,249 rather than per-SNP effective N; this approximation can affect Steiger R², P values and near-boundary direction calls.
 
 MR-PRESSO was disabled for the equality checks so the comparison isolates the deterministic estimator. The separate robustness stage fixes the MR-PRESSO seed at 20260815 and requires at least 10,000 simulations for formal candidates.
 

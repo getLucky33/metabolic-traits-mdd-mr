@@ -62,6 +62,50 @@ assert_numeric <- function(x, columns, label = "table") {
   invisible(TRUE)
 }
 
+classify_full_screen <- function(x, p_column = "ivw_p", n_tests = 249L) {
+  if (!"trait" %in% names(x)) stop("Full screen requires a trait column")
+  if (!p_column %in% names(x)) stop("Full screen is missing ", p_column)
+  if (nrow(x) != n_tests || data.table::uniqueN(x$trait) != n_tests) {
+    stop("Full screen requires exactly ", n_tests, " unique traits")
+  }
+  p <- x[[p_column]]
+  if (!is.numeric(p) || anyNA(p) || any(!is.finite(p)) || any(p < 0 | p > 1)) {
+    stop("Full-screen P values must be finite and within [0,1]")
+  }
+  x[, p_fdr_bh := stats::p.adjust(get(p_column), method = "BH", n = n_tests)]
+  x[, p_bonf := stats::p.adjust(get(p_column), method = "bonferroni", n = n_tests)]
+  x[, screen_level := data.table::fcase(
+    p_bonf < 0.05, "bonferroni_hit",
+    p_fdr_bh < 0.05, "fdr_only",
+    get(p_column) < 0.05, "nominal",
+    default = "null"
+  )]
+  x
+}
+
+window_overlaps_mhc <- function(chr, window_start, window_end,
+                                mhc_start = 25000000, mhc_end = 34000000) {
+  chr <- suppressWarnings(as.integer(chr))
+  window_start <- suppressWarnings(as.numeric(window_start))
+  window_end <- suppressWarnings(as.numeric(window_end))
+  valid <- is.finite(chr) & is.finite(window_start) & is.finite(window_end) &
+    window_start <= window_end
+  valid & chr == 6L & window_end >= mhc_start & window_start <= mhc_end
+}
+
+i2gx_from_bse <- function(beta, se) {
+  keep <- is.finite(beta) & is.finite(se) & se > 0
+  beta <- as.numeric(beta[keep])
+  se <- as.numeric(se[keep])
+  k <- length(beta)
+  if (k < 2L) return(NA_real_)
+  w <- 1 / se^2
+  mean_w <- sum(w * beta) / sum(w)
+  qx <- sum(w * (beta - mean_w)^2)
+  if (!is.finite(qx) || qx <= 0) return(0)
+  max(0, (qx - (k - 1L)) / qx)
+}
+
 safe_trait <- function(x) {
   y <- gsub("[^A-Za-z0-9._-]+", "_", x)
   ifelse(nzchar(y), y, "trait")

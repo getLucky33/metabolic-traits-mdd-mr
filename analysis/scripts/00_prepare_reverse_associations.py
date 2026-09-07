@@ -36,6 +36,14 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle, delimiter="\t"))
 
 
+def require_unique(rows: list[dict[str, str]], key: str, label: str) -> None:
+    values = [row.get(key, "").strip() for row in rows]
+    if any(not value for value in values):
+        raise ValueError(f"{label} contains a blank {key}")
+    if len(values) != len(set(values)):
+        raise ValueError(f"{label} must contain unique {key} values")
+
+
 def build_coords(mdd: dict[str, dict[str, str]], bcftools: Path, dbsnp: Path) -> dict[str, tuple[str, int]]:
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False, suffix=".txt") as handle:
         handle.write("\n".join(sorted(mdd)) + "\n")
@@ -74,10 +82,14 @@ def main() -> None:
     required_mdd = {"rsid", "A1", "A2", "beta", "se", "p", "eaf"}
     if not mdd_rows or not required_mdd.issubset(mdd_rows[0]):
         raise ValueError(f"MDD IV file needs columns: {sorted(required_mdd)}")
+    require_unique(mdd_rows, "rsid", "MDD IV file")
     mdd = {row["rsid"]: row for row in mdd_rows}
 
     if args.coords:
         coords_rows = read_tsv(args.coords)
+        if not coords_rows or not {"rsid", "chr", "pos"}.issubset(coords_rows[0]):
+            raise ValueError("coordinate table needs rsid, chr and pos columns")
+        require_unique(coords_rows, "rsid", "coordinate table")
         coords = {r["rsid"]: (canonical_chrom(r["chr"]), int(r["pos"])) for r in coords_rows}
         if set(coords) != set(mdd):
             raise ValueError("coordinate table must contain exactly the MDD instrument rsIDs")
@@ -93,6 +105,7 @@ def main() -> None:
     manifest = read_tsv(args.exposure_manifest)
     if not manifest or not {"trait", "source_file"}.issubset(manifest[0]):
         raise ValueError("exposure manifest needs trait and source_file columns")
+    require_unique(manifest, "trait", "exposure manifest")
 
     fields = [
         "rsid", "mdd_A1", "mdd_A2", "mdd_beta", "mdd_se", "mdd_p", "mdd_eaf",

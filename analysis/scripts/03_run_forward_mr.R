@@ -49,9 +49,16 @@ for (i in seq_along(files)) {
 }
 
 main <- data.table::rbindlist(summary_rows, fill = TRUE)
-main[, `:=`(p_bonf = p.adjust(ivw_p, method = "bonferroni", n = n_tests),
-            pilot_fdr = p.adjust(ivw_p, method = "BH"))]
-main[, sig_level := ifelse(p_bonf < 0.05, "bonferroni_hit", "not_bonferroni_significant")]
+if (!length(traits_keep)) {
+  main <- classify_full_screen(main, "ivw_p", n_tests)
+  data.table::fwrite(main, file.path(out_dir, "mr_main_summary_screen.tsv"), sep = "\t")
+} else {
+  main[, `:=`(
+    p_bonf = p.adjust(ivw_p, method = "bonferroni", n = n_tests),
+    pilot_fdr = p.adjust(ivw_p, method = "BH")
+  )]
+  main[, sig_level := ifelse(p_bonf < 0.05, "bonferroni_hit", "not_bonferroni_significant")]
+}
 data.table::fwrite(main, file.path(out_dir, "mr_main_summary.tsv"), sep = "\t")
 data.table::fwrite(data.table::rbindlist(long_rows, fill = TRUE), file.path(out_dir, "mr_main_long.tsv"), sep = "\t")
 data.table::fwrite(data.table::rbindlist(diagnostic_rows, fill = TRUE), file.path(out_dir, "mr_sensitivity.tsv"), sep = "\t")

@@ -22,3 +22,8 @@ palindrome_eaf_exclusion	0.08	colocalisation	Exclude when either EAF is within 0
 proxy_r2	0.8	colocalisation QC	PLINK European-reference proxy threshold
 mhc_interval_grch38	chr6:25000000-34000000	colocalisation QC	Excluded from positive classification
 finngen_family_size	15	FinnGen cross-outcome comparison	BH-FDR and Bonferroni over the locked 15 traits
+finngen_support_labels	FDR-supported,nominally-supported,no-nominal-support	FinnGen cross-outcome comparison	Direction concordance plus FinnGen BH/nominal P; overlap-uncorrected Q excluded
+locus_anchor_distance_bp	1000000	locus construction	New lead joins only when within 1 Mb of the first lead in its cluster
+locus_flank_bp	500000	locus construction	Half-open window adds 500 kb beyond the minimum and maximum clustered leads
+i2gx_formula	max(0,(QX-(K-1))/QX)	instrument-strength QC	QX uses inverse-SE-squared weights for SNP-exposure estimates
+nome_i2gx_flag	>=0.90	instrument-strength QC	Diagnostic flag only; not proof that MR-Egger is unbiased

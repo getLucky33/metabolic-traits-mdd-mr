@@ -1,7 +1,7 @@
 component	version	source
 R	4.5.1	R Project
 data.table	1.18.4	CRAN
-TwoSampleMR	0.7.9	MRCIEU
+TwoSampleMR	0.7.9	MRCIEU/TwoSampleMR commit 3d119f20d6fc164b0c7f710f5590fee9580f2c7b
 MendelianRandomization	0.10.0	CRAN
 MRPRESSO	1.0	rondolab/MR-PRESSO commit 3e3c92d7eda6dce0d1d66077373ec0f7ff4f7e87
 ieugwasr	1.1.0	CRAN

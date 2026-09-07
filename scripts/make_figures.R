@@ -1,5 +1,5 @@
 # Generate Figures 1–4 for the Scientific Reports submission.
-# Values and evidence classifications come from the frozen project files.
+# Values and evidence classifications are read from released aggregate tables.
 
 suppressPackageStartupMessages({
   library(data.table)
@@ -13,7 +13,10 @@ file_arg <- sub("^--file=", "", args[grepl("^--file=", args)])
 SCRIPT_DIR <- if (length(file_arg)) dirname(normalizePath(file_arg[[1]])) else getwd()
 ROOT <- normalizePath(file.path(SCRIPT_DIR, ".."), mustWork = TRUE)
 DATA <- file.path(ROOT, "data", "derived")
-OUT <- file.path(ROOT, "results", "figures")
+cli <- commandArgs(trailingOnly = TRUE)
+out_at <- match("--out", cli)
+if (!is.na(out_at) && out_at == length(cli)) stop("--out requires a directory")
+OUT <- if (is.na(out_at)) file.path(ROOT, "results", "figures") else cli[[out_at + 1L]]
 dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 FONT <- "sans"
 
@@ -98,13 +101,11 @@ t2[, trait_display := display_name(trait)]
 t2[, trait_figure_label := wrap_trait(figure_full_name(trait))]
 stopifnot(uniqueN(t2$trait_figure_label) == nrow(t2))
 t2[, .(display_order = .I, trait_id = trait, trait_display = figure_full_name(trait))] |>
-  fwrite(file.path(OUT, "Figure_2_3_trait_labels.tsv"), sep = "\t")
-t2[, group_label := fifelse(proposed_group == "priority_replication",
+  fwrite(file.path(OUT, "Figure_2_3_trait_labels.tsv"), sep = "\t", eol = "\n")
+t2[, group_label := fifelse(reporting_group == "priority_reporting",
                              "Priority reporting group", "Secondary reporting group")]
 
 # Figure 1: study inputs and evidence stages.
-# This study-specific diagram uses standard workflow conventions; it does not
-# reproduce another paper's analysis, wording, or artwork.
 draw_figure1 <- function() {
   grid.newpage()
   pushViewport(viewport(x = 0.5, y = 0.5, width = 0.95, height = 0.97))
@@ -155,7 +156,7 @@ draw_figure1 <- function() {
   )
   card(
     0.73, 0.865, 0.40, 0.14, "Depression outcome GWAS",
-    paste0("Primary PGC MDD: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls\n",
+    paste0("PGC major depression: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls\n",
            "PGC excluding UK Biobank: ", fmt("pgc_nb_cases"), " / ", fmt("pgc_nb_controls"), "\n",
            "FinnGen R13 depression: ", fmt("finngen_cases"), " / ", fmt("finngen_controls"), "\n",
            "Counts are reported as cases / controls"),
@@ -163,7 +164,7 @@ draw_figure1 <- function() {
   )
   card(
     0.50, 0.670, 0.52, 0.095, "Primary forward Mendelian randomization",
-    paste0("Primary outcome: PGC MDD\n", fmt("n_screen_bonf"), " Bonferroni-significant traits"),
+    paste0("Primary outcome: PGC major depression\n", fmt("n_screen_bonf"), " Bonferroni-significant traits"),
     "#B9DCEB", body_size = 7.6, border = "#8EB9CC", title_size = 9.5
   )
 
@@ -178,20 +179,20 @@ draw_figure1 <- function() {
   )
   card(
     0.50, 0.480, 0.28, 0.17, "Directionality",
-    "Steiger orientation\nReverse Mendelian randomization\nAlternative prevalence assumptions",
+    "Steiger directionality test\nReverse Mendelian randomization\nAlternative prevalence assumptions",
     "#DDD8E9", body_size = 6.9, title_size = 8.4
   )
   card(
     0.82, 0.480, 0.28, 0.17, "Locus evidence",
     paste0("Colocalization and regional checks\nConditional / SuSiE exploratory checks\n",
-           fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " meet H4-evidence rule"),
+           fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " have shared-variant posterior support"),
     "#F4DCCB", body_size = 6.7, title_size = 8.4
   )
   card(
     0.50, 0.287, 0.68, 0.085, "Alternative-outcome analysis",
     paste0("FinnGen R13 register-based depression: ", fmt("fg13_dir_same"), "/",
            fmt("matrix_fg13_rows"), " directionally concordant\n",
-           "Cross-outcome comparison; not an independent clinical MDD replication"),
+           "Alternative-outcome comparison; not an independent replication"),
     "#D8E7D7", body_size = 7.0, border = "#AFC7AD", title_size = 8.7
   )
   card(
@@ -199,8 +200,8 @@ draw_figure1 <- function() {
     paste0(fmt("groups_priority"), " priority reporting traits | ",
            fmt("groups_secondary"), " secondary reporting traits\n",
            fmt("coloc_records"), " records narrowed to ",
-           fmt("h4_evidence_rows"), " H4-evidence records and ",
-           fmt("mechanism_eligible_true"), " mechanism-eligible records"),
+           fmt("h4_evidence_rows"), " with shared-variant posterior support\n",
+           fmt("mechanism_eligible_true"), " met the composite mechanism-support criterion"),
     "#C9D8E8", body_size = 7.4, border = "#9CB2C8", title_size = 9.1
   )
   grid.roundrect(x = 0.50, y = 0.050, width = 0.82, height = 0.055,
@@ -214,13 +215,13 @@ draw_figure1 <- function() {
 mermaid <- c(
   "flowchart TB",
   paste0("  E[\"Exposure GWAS<br/>", fmt("n_traits_metabolites"), " NMR-derived circulating metabolic traits<br/>N = ", fmt("tambets_meta_eur"), "; Estonian Biobank + UK Biobank\"]"),
-  paste0("  O[\"Depression outcome GWAS<br/>Primary PGC MDD: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls<br/>PGC outcome excluding UK Biobank: ", fmt("pgc_nb_cases"), " / ", fmt("pgc_nb_controls"), "<br/>FinnGen R13 depression: ", fmt("finngen_cases"), " / ", fmt("finngen_controls"), "\"]"),
+  paste0("  O[\"Depression outcome GWAS<br/>PGC major depression: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls<br/>PGC outcome excluding UK Biobank: ", fmt("pgc_nb_cases"), " / ", fmt("pgc_nb_controls"), "<br/>FinnGen R13 depression: ", fmt("finngen_cases"), " / ", fmt("finngen_controls"), "\"]"),
   paste0("  P[\"Primary forward Mendelian randomization<br/>", fmt("n_screen_bonf"), " Bonferroni-significant traits\"]"),
   "  R[\"Robustness and sensitivity<br/>Harmonization; pleiotropy; heterogeneity<br/>PGC outcome excluding UK Biobank\"]",
-  "  D[\"Directionality<br/>Steiger orientation; reverse Mendelian randomization<br/>Alternative prevalence assumptions\"]",
-  paste0("  L[\"Locus evidence<br/>", fmt("coloc_records"), " trait-specific locus records<br/>", fmt("h4_evidence_rows"), " meet the H4-evidence rule\"]"),
-  paste0("  F[\"FinnGen R13 alternative-outcome comparison<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant<br/>Not an independent clinical MDD replication\"]"),
-  paste0("  G[\"Evidence integration<br/>", fmt("groups_priority"), " priority / ", fmt("groups_secondary"), " secondary<br/>", fmt("coloc_records"), " to ", fmt("h4_evidence_rows"), " to ", fmt("mechanism_eligible_true"), " mechanism-eligible records\"]"),
+  "  D[\"Directionality<br/>Steiger directionality test; reverse Mendelian randomization<br/>Alternative prevalence assumptions\"]",
+  paste0("  L[\"Locus evidence<br/>", fmt("coloc_records"), " trait-specific analysis-window records<br/>", fmt("h4_evidence_rows"), " have shared-variant posterior support\"]"),
+  paste0("  F[\"FinnGen R13 alternative-outcome comparison<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant<br/>Not an independent replication\"]"),
+  paste0("  G[\"Evidence integration<br/>", fmt("groups_priority"), " priority / ", fmt("groups_secondary"), " secondary<br/>", fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), " met the composite criterion\"]"),
   "  B[\"Interpretive boundary: directional concordance does not establish a shared causal mechanism\"]",
   "  E --> P",
   "  O --> P",
@@ -233,7 +234,10 @@ mermaid <- c(
   "  F --> G",
   "  G --> B"
 )
-writeLines(mermaid, file.path(OUT, "Figure_1_source.mermaid"), useBytes = TRUE)
+writeBin(
+  charToRaw(paste0(paste(mermaid, collapse = "\n"), "\n")),
+  file.path(OUT, "Figure_1_source.mermaid")
+)
 cairo_pdf(file.path(OUT, "Figure_1.pdf"), width = 7.2, height = 9.2, family = FONT, bg = "white")
 draw_figure1(); dev.off()
 png(file.path(OUT, "Figure_1_600dpi.png"), width = 7.2, height = 9.2,
@@ -246,27 +250,48 @@ draw_figure1(); dev.off()
 forest <- fread(file.path(DATA, "forest_estimates.tsv"))
 forest <- forest[match(t2$trait, trait)]
 stopifnot(identical(forest$trait, t2$trait), !anyNA(forest$b_pgc), !anyNA(forest$b_fg))
+forward_screen <- fread(file.path(DATA, "forward_screen_249.tsv"))
+finngen_screen <- fread(file.path(DATA, "finngen_cross_outcome_15.tsv"))
+forward_plot_source <- forward_screen[match(t2$trait, trait)]
+finngen_plot_source <- finngen_screen[match(t2$trait, trait)]
+same_num <- function(a, b) all(is.finite(a)) && all(is.finite(b)) &&
+  max(abs(as.numeric(a) - as.numeric(b))) < 1e-12
+if (!identical(forward_plot_source$trait, t2$trait) ||
+    !identical(finngen_plot_source$trait, t2$trait) ||
+    !same_num(forest$b_pgc, forward_plot_source$ivw_b) ||
+    !same_num(forest$se_pgc, forward_plot_source$ivw_se) ||
+    !same_num(forest$b_fg, finngen_plot_source$fg_b) ||
+    !same_num(forest$se_fg, finngen_plot_source$fg_se) ||
+    !identical(forest$cross_outcome_support_label,
+               finngen_plot_source$cross_outcome_support_label)) {
+  stop("Figure 2 values do not match the released forward/FinnGen source tables")
+}
 f2 <- rbind(
-  forest[, .(trait, proposed_group, dataset = "PGC clinical MDD", estimate = exp(b_pgc),
+  forest[, .(trait, reporting_group, dataset = "PGC major depression", estimate = exp(b_pgc),
              lower = exp(b_pgc - 1.96 * se_pgc), upper = exp(b_pgc + 1.96 * se_pgc))],
-  forest[, .(trait, proposed_group, dataset = "FinnGen R13 depression", estimate = exp(b_fg),
+  forest[, .(trait, reporting_group, dataset = "FinnGen R13 depression", estimate = exp(b_fg),
              lower = exp(b_fg - 1.96 * se_fg), upper = exp(b_fg + 1.96 * se_fg))]
 )
 f2[, trait_display := wrap_trait(figure_full_name(trait))]
-f2[, group_label := fifelse(proposed_group == "priority_replication",
+f2[, group_label := fifelse(reporting_group == "priority_reporting",
                              "Priority reporting group", "Secondary reporting group")]
+fwrite(
+  f2[, .(trait_id = trait, trait_display = figure_full_name(trait), reporting_group, group_label,
+         dataset, estimate, lower, upper)],
+  file.path(OUT, "Figure_2_plot_data.tsv"), sep = "\t", eol = "\n"
+)
 f2[, trait_display := factor(trait_display, levels = rev(t2$trait_figure_label))]
-f2[, dataset := factor(dataset, levels = c("PGC clinical MDD", "FinnGen R13 depression"))]
+f2[, dataset := factor(dataset, levels = c("PGC major depression", "FinnGen R13 depression"))]
 f2_labels <- forest[, .(
   trait,
-  proposed_group,
+  reporting_group,
   estimate_text = sprintf("PGC %.3f (%.3f-%.3f) | FG %.3f (%.3f-%.3f)",
                           exp(b_pgc), exp(b_pgc - 1.96 * se_pgc), exp(b_pgc + 1.96 * se_pgc),
                           exp(b_fg), exp(b_fg - 1.96 * se_fg), exp(b_fg + 1.96 * se_fg))
 )]
 f2_labels[, trait_display := factor(wrap_trait(figure_full_name(trait)),
                                     levels = rev(t2$trait_figure_label))]
-f2_labels[, group_label := fifelse(proposed_group == "priority_replication",
+f2_labels[, group_label := fifelse(reporting_group == "priority_reporting",
                                     "Priority reporting group", "Secondary reporting group")]
 p2 <- ggplot(f2, aes(estimate, trait_display, colour = dataset, shape = dataset)) +
   geom_vline(xintercept = 1, colour = "#7F8B93", linewidth = 0.5, linetype = 2) +
@@ -292,6 +317,18 @@ rev_noukbb <- fread(file.path(DATA, "reverse_mr_no_ukbb.tsv"))
 setkey(rev_main, trait); setkey(rev_noukbb, trait)
 rm <- rev_main[J(t2$trait)]; rn <- rev_noukbb[J(t2$trait)]
 if (anyNA(rm$screen_level) || anyNA(rn$screen_level)) stop("Reverse-MR matrix source is incomplete")
+reverse_main_full <- fread(file.path(DATA, "reverse_screen_main_249.tsv"))
+reverse_noukbb_full <- fread(file.path(DATA, "reverse_screen_noukbb_249.tsv"))
+setkey(reverse_main_full, trait); setkey(reverse_noukbb_full, trait)
+if (!identical(rm$screen_level, reverse_main_full[J(t2$trait), screen_level]) ||
+    !identical(rn$screen_level, reverse_noukbb_full[J(t2$trait), screen_level])) {
+  stop("Figure 3 reverse-MR labels do not match the released 249-trait screens")
+}
+shared_iv <- fread(file.path(DATA, "broad_pleiotropy_sensitivity_15.tsv"))
+setkey(shared_iv, trait_id)
+if (!identical(t2$pleio_ok, shared_iv[J(t2$trait), after_p] < 0.05)) {
+  stop("Figure 3 shared-IV-removal labels do not match the released sensitivity table")
+}
 reverse_code <- ifelse(rm$screen_level == "bonferroni_hit" & rn$screen_level == "bonferroni_hit", "B/B",
                        ifelse(rm$screen_level == "bonferroni_hit", "B/F",
                               ifelse(rn$screen_level == "bonferroni_hit", "F/B", "F/F")))
@@ -303,16 +340,16 @@ matrix_wide <- data.table(
   trait = t2$trait,
   `Effect\nIVW dir.` = ifelse(main_or > 1, "+", "-"),
   `Effect\n5 methods` = paste0(t2$five_dir, "/5"),
-  `Robustness\nAction 3` = ifelse(t2$a3_ok == TRUE, "Yes", "No"),
-  `Robustness\nNo UKBB` = ifelse(t2$noukbb_ok == TRUE, "Yes", "No"),
+  `Robustness\nPalindromic exclusion` = ifelse(t2$a3_ok == TRUE, "Yes", "No"),
+  `Robustness\nUK Biobank excluded` = ifelse(t2$noukbb_ok == TRUE, "Yes", "No"),
   `Robustness\nMR-PRESSO` = ifelse(t2$presso == TRUE, "Yes", "No"),
-  `Robustness\nPleiotropy` = ifelse(t2$pleio_ok == TRUE, "Yes", "No"),
+  `Sensitivity\nShared-IV removal` = ifelse(t2$pleio_ok == TRUE, "Yes", "No"),
   `Diagnostics\nEgger int.` = ifelse(t2$egger_sig == TRUE, "Sig", "NS"),
   `Diagnostics\nCochran Q` = ifelse(t2$q_sig == TRUE, "Sig", "NS"),
   `Direction\nReverse MR` = reverse_code,
-  `Cross-outcome\nFG dir.` = ifelse(fg_or > 1, "+", "-"),
-  `Cross-outcome\nFG label` = fifelse(t2$fg13_label == "strong", "STR",
-                       fifelse(t2$fg13_label == "supportive", "SUP", "NR")),
+  `Alternative outcome\nFG direction` = ifelse(fg_or > 1, "+", "-"),
+  `Alternative outcome\nP level` = fifelse(t2$fg13_p_bh < 0.05, "FDR",
+                       fifelse(t2$fg13_p < 0.05, "Nom", "NS")),
   `Locus\nColoc` = coloc_code
 )
 layer_order <- names(matrix_wide)[-1]
@@ -322,13 +359,30 @@ m3[, group_label := t2$group_label[match(trait, t2$trait)]]
 m3[, trait_display := factor(trait_display, levels = rev(t2$trait_figure_label))]
 m3[, layer := factor(layer, levels = layer_order)]
 m3[, state := fcase(
-  value %chin% c("Yes", "5/5", "STR", "R", "B/B"), "support",
-  value %chin% c("SUP", "P", "B/F", "F/B"), "qualified",
-  value %chin% c("No", "NR", "Sig"), "limitation",
+  value %chin% c("Yes", "5/5", "FDR", "R", "B/B"), "support",
+  value %chin% c("Nom", "P", "B/F", "F/B"), "qualified",
+  value %chin% c("No", "NS", "Sig"), "limitation",
   value %chin% c("+"), "positive",
   value %chin% c("-"), "negative",
   default = "neutral"
 )]
+fwrite(
+  m3[, .(
+    trait_id = trait,
+    trait_display = figure_full_name(trait),
+    reporting_group = t2$reporting_group[match(trait, t2$trait)],
+    group_label,
+    layer = gsub("\n", " / ", as.character(layer), fixed = TRUE),
+    value = as.character(value),
+    state,
+    definition = fifelse(
+      as.character(layer) == "Sensitivity\nShared-IV removal",
+      "Yes means P<0.05 after removing variants used as instruments for more than five metabolic traits",
+      ""
+    )
+  )],
+  file.path(OUT, "Figure_3_matrix_data.tsv"), sep = "\t", eol = "\n"
+)
 p3 <- ggplot(m3, aes(layer, trait_display, fill = state, label = value)) +
   geom_tile(colour = "white", linewidth = 0.75) +
   geom_text(family = FONT, size = 2.75, colour = COL$ink) +
@@ -375,7 +429,7 @@ p4b <- ggplot(stage2, aes(x = 1, y = n, fill = class)) +
   coord_flip() +
   scale_fill_manual(values = pal2, labels = paste0(stage2$class, " (", stage2$n, ")")) +
   scale_y_continuous(expand = expansion(mult = c(0, 0))) +
-  labs(title = paste0("b  H4-oriented evidence set (n = ", fmt("h4_evidence_rows"), ")"), x = NULL, y = NULL) +
+  labs(title = paste0("b  Records with shared-causal-variant posterior support (n = ", fmt("h4_evidence_rows"), ")"), x = NULL, y = NULL) +
   theme_sr(8.6) +
   theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank(),
         legend.position = "bottom", legend.box = "vertical", legend.text = element_text(size = 7.4),
@@ -385,10 +439,10 @@ p4c <- ggplot() +
   annotate("rect", xmin = 0, xmax = 1, ymin = 0, ymax = 1, fill = "#F7F4EC", colour = "#DCCDAA", linewidth = 0.8) +
   annotate("text", x = 0.5, y = 0.67, label = paste0(fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows")),
            family = FONT, fontface = "bold", colour = COL$navy, size = 11) +
-  annotate("text", x = 0.5, y = 0.34, label = "met the integrated mechanism-eligibility rule",
+  annotate("text", x = 0.5, y = 0.34, label = "met the composite mechanism-support criterion",
            family = FONT, colour = COL$ink, size = 3.6) +
   coord_cartesian(xlim = c(0, 1), ylim = c(0, 1), expand = FALSE) +
-  labs(title = "c  Mechanism-grade evidence") +
+  labs(title = "c  Composite mechanism support") +
   theme_void(base_family = FONT) +
   theme(plot.title = element_text(face = "bold", size = 9.5, colour = COL$ink),
         plot.margin = margin(7, 9, 20, 7))
@@ -403,16 +457,17 @@ expected <- c(
   file.path(OUT, paste0("Figure_", rep(1:4, each = 3),
                        rep(c(".pdf", ".svg", "_600dpi.png"), times = 4))),
   file.path(OUT, "Figure_1_source.mermaid"),
-  file.path(OUT, "Figure_2_3_trait_labels.tsv")
+  file.path(OUT, "Figure_2_3_trait_labels.tsv"),
+  file.path(OUT, "Figure_2_plot_data.tsv"),
+  file.path(OUT, "Figure_3_matrix_data.tsv")
 )
 if (!all(file.exists(expected)) || any(file.info(expected)$size < 1000)) {
   stop("One or more expected figure outputs are absent or unexpectedly small")
 }
 checksums <- data.table(
-  file = sub(paste0("^", normalizePath(ROOT, winslash = "/"), "/"), "",
-             normalizePath(expected, winslash = "/")),
+  file = basename(expected),
   bytes = file.info(expected)$size,
   md5 = unname(tools::md5sum(expected))
 )
-fwrite(checksums, file.path(ROOT, "results", "figure_checksums.tsv"), sep = "\t")
-cat("Reproduction checks passed; checksum manifest written to results/figure_checksums.tsv\n")
+fwrite(checksums, file.path(OUT, "figure_checksums.tsv"), sep = "\t", eol = "\n")
+cat("Reproduction checks passed; checksum manifest written to the selected output directory\n")

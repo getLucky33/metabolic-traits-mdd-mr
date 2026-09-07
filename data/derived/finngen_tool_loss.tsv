@@ -1,0 +1,16 @@
+trait	n_iv	n_matched	n_allele_conflict	n_duplicate_conflict	n_not_found	n_harmonise_used	palindromic	flipped	removed
+Cholesterol_in_very_large_HDL	455	440	0	0	15	428	62	2	12
+Cholesterol_to_total_lipids_ratio_in_large_HDL	450	440	0	0	10	425	67	2	15
+Cholesterol_to_total_lipids_ratio_in_medium_VLDL	372	361	0	0	11	355	47	2	6
+Cholesterol_to_total_lipids_ratio_in_very_large_VLDL	316	304	0	0	12	296	42	1	8
+Cholesteryl_esters_to_total_lipids_ratio_in_medium_VLDL	385	377	0	0	8	370	51	1	7
+Cholesteryl_esters_to_total_lipids_ratio_in_very_small_VLDL	399	388	0	0	11	377	50	2	11
+Free_cholesterol_in_very_large_HDL	377	366	0	0	11	356	55	3	10
+Free_cholesterol_to_total_lipids_ratio_in_medium_VLDL	342	333	0	0	9	328	44	0	5
+GlycA	381	373	0	0	8	357	55	2	16
+Monounsaturated_fatty_acids	336	329	0	0	7	316	48	4	13
+Ratio_of_monounsaturated_fatty_acids_to_total_fatty_acids	387	381	0	0	6	368	45	5	13
+Ratio_of_polyunsaturated_fatty_acids_to_monounsaturated_fatty_acids	361	354	0	0	7	343	40	3	11
+Ratio_of_polyunsaturated_fatty_acids_to_total_fatty_acids	304	294	0	0	10	286	32	2	8
+Triglycerides_to_total_lipids_ratio_in_very_large_HDL	416	405	0	0	11	391	62	2	14
+Triglycerides_to_total_lipids_ratio_in_very_small_VLDL	384	371	0	0	13	359	50	1	12

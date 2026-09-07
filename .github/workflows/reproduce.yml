@@ -25,6 +25,8 @@ jobs:
           cat("PASS:", length(files), "R files parsed\n")
       - name: Compile Python analysis scripts
         run: python -m py_compile analysis/scripts/*.py analysis/tests/*.py
+      - name: Test reverse-extractor duplicate-key guards
+        run: python analysis/tests/test_reverse_extractor.py
 
   figures:
     runs-on: ubuntu-latest
@@ -33,15 +35,13 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: '4.5.1'
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: |
-            any::data.table
-            any::ggplot2
-            any::patchwork
-            any::scales
+      - uses: r-lib/actions/setup-renv@v2
       - name: Reproduce figures and checks
-        run: Rscript scripts/make_figures.R
+        run: Rscript scripts/make_figures.R --out results/figures
+      - name: Confirm figure source tables and checksums
+        run: test -s results/figures/Figure_2_plot_data.tsv && test -s results/figures/Figure_3_matrix_data.tsv && test -s results/figures/figure_checksums.tsv
+      - name: Confirm released aggregate inputs were not rewritten
+        run: git diff --exit-code -- data/derived
 
   analysis-smoke:
     runs-on: ubuntu-latest
@@ -50,13 +50,14 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: '4.5.1'
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: |
-            any::data.table
-            any::MendelianRandomization
-            any::coloc
-            github::MRCIEU/TwoSampleMR@v0.7.9
-            github::rondolab/MR-PRESSO@3e3c92d7eda6dce0d1d66077373ec0f7ff4f7e87
+      - uses: r-lib/actions/setup-renv@v2
       - name: Run synthetic MR and colocalization smoke test
         run: Rscript analysis/tests/smoke_test.R
+      - name: Replay frozen 6,434-row classification
+        run: |
+          Rscript analysis/scripts/08_classify_coloc.R \
+            --locus-manifest data/derived/coloc_locus_manifest.tsv \
+            --results data/derived/coloc_abf_results.tsv \
+            --status data/derived/coloc_status.tsv \
+            --lead-qc data/derived/coloc_lead_qc.tsv \
+            --out-dir results/analysis/coloc-replay

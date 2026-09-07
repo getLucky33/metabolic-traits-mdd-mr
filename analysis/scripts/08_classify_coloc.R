@@ -6,8 +6,14 @@ require_packages("data.table")
 manifest_file <- assert_file(arg_required(args, "locus-manifest"), "locus manifest")
 results_file <- assert_file(arg_required(args, "results"), "coloc results")
 status_file <- assert_file(arg_required(args, "status"), "coloc status")
-final_snps_file <- assert_file(arg_required(args, "final-snps"), "final SNP table")
-exposure_qc_file <- assert_file(arg_required(args, "exposure-lead-qc"), "exposure lead QC")
+lead_qc_file <- args[["lead-qc"]]
+if (!is.null(lead_qc_file)) {
+  lead_qc_file <- assert_file(lead_qc_file, "precomputed lead QC")
+  final_snps_file <- exposure_qc_file <- NULL
+} else {
+  final_snps_file <- assert_file(arg_required(args, "final-snps"), "final SNP table")
+  exposure_qc_file <- assert_file(arg_required(args, "exposure-lead-qc"), "exposure lead QC")
+}
 out_dir <- arg_required(args, "out-dir")
 plink_bin <- args[["plink"]]
 ld_bfile <- args[["ld-bfile"]]
@@ -42,10 +48,12 @@ classify_full <- function(st_main, st_noukbb, pp_valid_main, pp_valid_noukbb,
 man <- data.table::fread(manifest_file)
 res <- data.table::fread(results_file)
 sts <- data.table::fread(status_file)
-fs <- data.table::fread(final_snps_file)
-eqc <- data.table::fread(exposure_qc_file)
-assert_columns(man, c("locus_key", "trait", "locus_id", "chr", "lead_rsid", "lead_pos"), "locus manifest")
+assert_columns(man, c("locus_key", "trait", "locus_id", "chr", "lead_rsid", "lead_pos",
+                      "window_start", "window_end"), "locus manifest")
 assert_columns(res, c("locus_key", "outcome", "p12", "PP.H0", "PP.H1", "PP.H2", "PP.H3", "PP.H4"), "results")
+assert_columns(sts, c("locus_key", "outcome", "analysis_status"), "coloc status")
+if (any(!is.finite(man$window_start)) || any(!is.finite(man$window_end)) ||
+    any(man$window_start > man$window_end)) stop("Locus manifest has invalid window boundaries")
 
 res[, pp_sum := PP.H0 + PP.H1 + PP.H2 + PP.H3 + PP.H4]
 valid <- res[, .(pp_valid = .N == 4L && data.table::uniqueN(p12) == 4L &&
@@ -56,63 +64,75 @@ valid <- res[, .(pp_valid = .N == 4L && data.table::uniqueN(p12) == 4L &&
 wide_st <- data.table::dcast(sts, locus_key ~ outcome, value.var = "analysis_status")
 wide_valid <- data.table::dcast(valid, locus_key ~ outcome, value.var = "pp_valid", fill = FALSE)
 
-resolve_lead <- function(key, outcome_name, lead_rsid) {
-  final <- fs[locus_key == key & outcome == outcome_name, unique(rsid)]
-  if (lead_rsid %in% final) return(data.table::data.table(
-    locus_key = key, outcome = outcome_name, lead_present = TRUE,
-    lead_resolution = "direct", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
-  if (is.null(plink_bin) || is.null(ld_bfile)) {
-    stop("Lead ", lead_rsid, " is absent from ", key, "/", outcome_name,
-         "; provide --plink and --ld-bfile for the frozen r2>0.8 proxy search")
+if (!is.null(lead_qc_file)) {
+  lead_qc <- data.table::fread(lead_qc_file)
+  assert_columns(lead_qc, c(
+    "locus_key", "qc_exp_lead_present", "qc_mdd_lead_present_main",
+    "qc_mdd_lead_present_noukbb"
+  ), "precomputed lead QC")
+  if (anyDuplicated(lead_qc$locus_key)) stop("Precomputed lead QC has duplicate locus keys")
+  x <- merge(man, lead_qc, by = "locus_key", all.x = TRUE)
+  data.table::setnames(x, c("qc_mdd_lead_present_main", "qc_mdd_lead_present_noukbb"),
+                       c("lead_main", "lead_noUKBB"))
+} else {
+  fs <- data.table::fread(final_snps_file)
+  eqc <- data.table::fread(exposure_qc_file)
+  resolve_lead <- function(key, outcome_name, lead_rsid) {
+    final <- fs[locus_key == key & outcome == outcome_name, unique(rsid)]
+    if (lead_rsid %in% final) return(data.table::data.table(
+      locus_key = key, outcome = outcome_name, lead_present = TRUE,
+      lead_resolution = "direct", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
+    if (is.null(plink_bin) || is.null(ld_bfile)) {
+      stop("Lead ", lead_rsid, " is absent from ", key, "/", outcome_name,
+           "; provide --plink and --ld-bfile for the frozen r2>0.8 proxy search")
+    }
+    prefix <- tempfile(pattern = "plink_proxy_", tmpdir = tempdir())
+    on.exit(unlink(paste0(prefix, c(".ld", ".log", ".nosex"))), add = TRUE)
+    code <- system2(plink_bin, c(
+      "--bfile", shQuote(ld_bfile), "--r2", "--ld-snp", lead_rsid,
+      "--ld-window-kb", "2000", "--ld-window", "999999", "--ld-window-r2", "0.8",
+      "--out", shQuote(prefix)
+    ), stdout = FALSE, stderr = FALSE)
+    ld_file <- paste0(prefix, ".ld")
+    if (code != 0L || !file.exists(ld_file)) return(data.table::data.table(
+      locus_key = key, outcome = outcome_name, lead_present = FALSE,
+      lead_resolution = "plink_failed_or_lead_absent", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
+    ld <- data.table::fread(ld_file)
+    if (!nrow(ld)) return(data.table::data.table(
+      locus_key = key, outcome = outcome_name, lead_present = FALSE,
+      lead_resolution = "no_proxy_r2_gt_0.8", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
+    candidates <- unique(data.table::rbindlist(list(
+      ld[SNP_A == lead_rsid, .(proxy_rsid = SNP_B, proxy_r2 = R2)],
+      ld[SNP_B == lead_rsid, .(proxy_rsid = SNP_A, proxy_r2 = R2)]
+    )))[proxy_rsid %in% final][order(-proxy_r2)]
+    if (!nrow(candidates)) return(data.table::data.table(
+      locus_key = key, outcome = outcome_name, lead_present = FALSE,
+      lead_resolution = "proxy_not_in_final_set", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
+    data.table::data.table(locus_key = key, outcome = outcome_name, lead_present = TRUE,
+                           lead_resolution = "proxy", proxy_rsid = candidates$proxy_rsid[[1]],
+                           proxy_r2 = candidates$proxy_r2[[1]])
   }
-  prefix <- tempfile(pattern = "plink_proxy_", tmpdir = tempdir())
-  on.exit(unlink(paste0(prefix, c(".ld", ".log", ".nosex"))), add = TRUE)
-  code <- system2(plink_bin, c(
-    "--bfile", shQuote(ld_bfile), "--r2", "--ld-snp", lead_rsid,
-    "--ld-window-kb", "2000", "--ld-window", "999999", "--ld-window-r2", "0.8",
-    "--out", shQuote(prefix)
-  ), stdout = FALSE, stderr = FALSE)
-  ld_file <- paste0(prefix, ".ld")
-  if (code != 0L || !file.exists(ld_file)) return(data.table::data.table(
-    locus_key = key, outcome = outcome_name, lead_present = FALSE,
-    lead_resolution = "plink_failed_or_lead_absent", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
-  ld <- data.table::fread(ld_file)
-  if (!nrow(ld)) return(data.table::data.table(
-    locus_key = key, outcome = outcome_name, lead_present = FALSE,
-    lead_resolution = "no_proxy_r2_gt_0.8", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
-  candidates <- unique(data.table::rbindlist(list(
-    ld[SNP_A == lead_rsid, .(proxy_rsid = SNP_B, proxy_r2 = R2)],
-    ld[SNP_B == lead_rsid, .(proxy_rsid = SNP_A, proxy_r2 = R2)]
-  )))[proxy_rsid %in% final][order(-proxy_r2)]
-  if (!nrow(candidates)) return(data.table::data.table(
-    locus_key = key, outcome = outcome_name, lead_present = FALSE,
-    lead_resolution = "proxy_not_in_final_set", proxy_rsid = NA_character_, proxy_r2 = NA_real_))
-  data.table::data.table(locus_key = key, outcome = outcome_name, lead_present = TRUE,
-                         lead_resolution = "proxy", proxy_rsid = candidates$proxy_rsid[[1]],
-                         proxy_r2 = candidates$proxy_r2[[1]])
-}
 
-lead_rows <- list()
-for (i in seq_len(nrow(man))) {
-  for (outcome_name in c("main", "noUKBB")) {
-    lead_rows[[length(lead_rows) + 1L]] <- resolve_lead(
-      man$locus_key[[i]], outcome_name, man$lead_rsid[[i]])
+  lead_rows <- list()
+  for (i in seq_len(nrow(man))) {
+    for (outcome_name in c("main", "noUKBB")) {
+      lead_rows[[length(lead_rows) + 1L]] <- resolve_lead(
+        man$locus_key[[i]], outcome_name, man$lead_rsid[[i]])
+    }
   }
+  lead <- data.table::rbindlist(lead_rows)
+  data.table::fwrite(lead, file.path(out_dir, "lead_proxy_qc.tsv"), sep = "\t")
+  wide_lead <- data.table::dcast(lead, locus_key ~ outcome, value.var = "lead_present", fill = FALSE)
+  x <- merge(man, eqc[, .(locus_key, qc_exp_lead_present)], by = "locus_key", all.x = TRUE)
+  x <- merge(x, wide_lead, by = "locus_key", all.x = TRUE)
+  data.table::setnames(x, c("main", "noUKBB"), c("lead_main", "lead_noUKBB"))
+  x[, qc_exp_lead_present := qc_exp_lead_present | lead_main | lead_noUKBB]
 }
-lead <- data.table::rbindlist(lead_rows)
-data.table::fwrite(lead, file.path(out_dir, "lead_proxy_qc.tsv"), sep = "\t")
-wide_lead <- data.table::dcast(lead, locus_key ~ outcome, value.var = "lead_present", fill = FALSE)
-
-x <- merge(man, eqc[, .(locus_key, qc_exp_lead_present)], by = "locus_key", all.x = TRUE)
 x <- merge(x, wide_st, by = "locus_key", all.x = TRUE, suffixes = c("", "_status"))
 data.table::setnames(x, intersect(c("main", "noUKBB"), names(x)), paste0("status_", intersect(c("main", "noUKBB"), names(x))))
 x <- merge(x, wide_valid, by = "locus_key", all.x = TRUE, suffixes = c("", "_valid"))
 if ("main" %in% names(x)) data.table::setnames(x, "main", "pp_valid_main")
 if ("noUKBB" %in% names(x)) data.table::setnames(x, "noUKBB", "pp_valid_noUKBB")
-x <- merge(x, wide_lead, by = "locus_key", all.x = TRUE, suffixes = c("", "_lead"))
-if ("main" %in% names(x)) data.table::setnames(x, "main", "lead_main")
-if ("noUKBB" %in% names(x)) data.table::setnames(x, "noUKBB", "lead_noUKBB")
-x[, qc_exp_lead_present := qc_exp_lead_present | lead_main | lead_noUKBB]
 get_pp <- function(key, outcome_name, prior, column) {
   z <- res[locus_key == key & outcome == outcome_name & abs(p12 - prior) < prior * 1e-8]
   if (nrow(z) != 1L) return(NA_real_)
@@ -128,7 +148,7 @@ for (i in seq_len(nrow(x))) {
     st_m, st_n,
     isTRUE(r$pp_valid_main), isTRUE(r$pp_valid_noUKBB),
     isTRUE(r$qc_exp_lead_present), isTRUE(r$lead_main), isTRUE(r$lead_noUKBB),
-    r$chr == 6L && r$lead_pos >= 25e6 && r$lead_pos <= 34e6,
+    window_overlaps_mhc(r$chr, r$window_start, r$window_end),
     get_pp(r$locus_key, "main", 5e-6, "PP.H1"), get_pp(r$locus_key, "main", 5e-6, "PP.H2"),
     get_pp(r$locus_key, "main", 5e-6, "PP.H3"), get_pp(r$locus_key, "main", 5e-6, "PP.H4"),
     get_pp(r$locus_key, "noUKBB", 5e-6, "PP.H3"), get_pp(r$locus_key, "noUKBB", 5e-6, "PP.H4"),
@@ -138,6 +158,7 @@ for (i in seq_len(nrow(x))) {
   rows[[i]] <- data.table::data.table(
     locus_key = r$locus_key, trait = r$trait, locus = r$locus_id,
     abf_class = z[[1]], failure_reason = z[[2]],
+    is_mhc = window_overlaps_mhc(r$chr, r$window_start, r$window_end),
     qc_exp_lead_present = isTRUE(r$qc_exp_lead_present),
     qc_mdd_lead_present_main = isTRUE(r$lead_main),
     qc_mdd_lead_present_noukbb = isTRUE(r$lead_noUKBB)
@@ -145,5 +166,24 @@ for (i in seq_len(nrow(x))) {
 }
 out <- data.table::rbindlist(rows)
 if (nrow(out) != nrow(man) || anyDuplicated(out$locus_key)) stop("Classification did not preserve one row per manifest locus")
+class_levels <- c("robust_coloc", "prior_sensitive_coloc", "distinct_signal",
+                  "trait_specific_or_low_power", "inconclusive")
+class_summary <- out[, .N, by = abf_class]
+if (any(!class_summary$abf_class %in% class_levels) || sum(class_summary$N) != nrow(man)) {
+  stop("Classification produced an unknown class or did not preserve the manifest count")
+}
+expected_counts <- c(robust_coloc = 14L, prior_sensitive_coloc = 87L,
+                     distinct_signal = 822L, trait_specific_or_low_power = 3430L,
+                     inconclusive = 2081L)
+if (nrow(man) == sum(expected_counts)) {
+  if (!setequal(class_summary$abf_class, class_levels)) {
+    stop("Frozen 6,434-locus output does not contain all five locked classes")
+  }
+  actual <- setNames(class_summary$N, class_summary$abf_class)[names(expected_counts)]
+  if (!identical(as.integer(actual), as.integer(expected_counts))) {
+    stop("Frozen 6,434-locus class counts differ from 14/87/822/3430/2081")
+  }
+}
 data.table::fwrite(out, file.path(out_dir, "loci_classification.tsv"), sep = "\t")
-data.table::fwrite(out[, .N, by = abf_class][order(abf_class)], file.path(out_dir, "class_summary.tsv"), sep = "\t")
+data.table::fwrite(class_summary[order(match(abf_class, class_levels))],
+                   file.path(out_dir, "class_summary.tsv"), sep = "\t")
