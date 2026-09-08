@@ -101,8 +101,8 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.10" not in description or "version: 0.2.10" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.10")
+if "Version: 0.2.11" not in description or "version: 0.2.11" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.11")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
@@ -116,13 +116,18 @@ for phrase in (
     "Cochran's Q, MR-Egger and MR-PRESSO",
     "trait-specific analysis-window records",
     "reporting groups unchanged",
-    "Groups defined before FinnGen",
+    'G[\\"Integrated evidence assessment<br/>',
     '"  FW --> C"',
     '"  C --> L"',
     "Corresponding candidate subset used for directionality",
 ):
     if phrase not in figure_script:
         errors.append(f"Figure 1 is missing a required scope or topology marker: {phrase}")
+if any(
+    phrase in figure_script
+    for phrase in ("Pre-FinnGen evidence synthesis", "Groups defined before FinnGen")
+):
+    errors.append("Figure 1 must use neutral evidence-synthesis wording")
 if "stage_label" in figure_script or "grid.circle" in figure_script:
     errors.append("Figure 1 must use unnumbered stage headings without circular badges")
 attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-07 for the exact current release schemas and publication boundary stated in this file."

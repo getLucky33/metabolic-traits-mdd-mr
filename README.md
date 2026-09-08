@@ -4,7 +4,7 @@
 
 Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu.
 
-Version 0.2.10 has three reproducibility layers:
+Version 0.2.11 has three reproducibility layers:
 
 1. `scripts/make_figures.R` regenerates Figures 1–4 from the released aggregate tables.
 2. Released aggregate inputs replay the complete 249-trait four-level screens and the 6,434-row colocalization classification, with fixed count assertions.

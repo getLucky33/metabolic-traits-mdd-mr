@@ -294,14 +294,13 @@ draw_figure1 <- function() {
                                                 col = fig$synthesis_line, lwd = 1.3))
   grid.rect(x = 0.53, y = 0.239, width = 0.767, height = 0.010,
             gp = gpar(fill = fig$synthesis, col = NA))
-  text_at("Pre-FinnGen evidence synthesis", 0.53, 0.244, size = 8.5,
+  text_at("Integrated evidence assessment", 0.53, 0.244, size = 8.5,
           face = "bold", colour = fig$navy)
   grid.lines(x = c(0.53, 0.53), y = c(0.163, 0.230), gp = gpar(col = fig$line, lwd = 1.0))
   text_at("Trait-level reporting", 0.345, 0.222, size = 7.2, face = "bold", colour = fig$navy)
   text_at(paste0(fmt("groups_priority"), " priority-reporting traits\n",
                  fmt("groups_secondary"), " secondary-reporting traits"),
           0.345, 0.191, size = 6.8, face = "bold", colour = fig$navy, lineheight = 1.10)
-  text_at("Groups defined before FinnGen", 0.345, 0.161, size = 5.8, colour = fig$slate)
   text_at("Locus-level assessment", 0.715, 0.222, size = 7.2, face = "bold", colour = fig$navy)
   text_at(paste0(fmt("h4_evidence_rows"), " with shared-variant posterior support"),
           0.715, 0.198, size = 6.4, face = "bold", colour = fig$navy)
@@ -342,7 +341,7 @@ mermaid <- c(
   "  R[\"Robustness and sensitivity<br/>Same 15 forward candidates; five estimators; Cochran's Q, MR-Egger and MR-PRESSO<br/>UK Biobank-excluded sensitivity; regional and shared-instrument exclusions\"]",
   "  D[\"Directionality<br/>Steiger assessment; candidate-linked results from both complete 249-trait reverse-MR screens\"]",
   paste0("  L[\"Locus evidence<br/>Same 15 forward candidates; ABF colocalization and regional direction checks<br/>MHC and complex-region assessment; ", fmt("coloc_records"), " trait-specific analysis-window records\"]"),
-  paste0("  G[\"Pre-FinnGen evidence synthesis<br/>", fmt("groups_priority"), " priority-reporting / ", fmt("groups_secondary"), " secondary-reporting traits<br/>", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"), " met the composite criterion\"]"),
+  paste0("  G[\"Integrated evidence assessment<br/>", fmt("groups_priority"), " priority-reporting / ", fmt("groups_secondary"), " secondary-reporting traits<br/>", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"), " met the composite criterion\"]"),
   paste0("  F[\"Separate FinnGen R13 alternative-outcome comparison<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant; reporting groups unchanged<br/>Not an independent replication\"]"),
   "  E --> FW",
   "  O --> FW",

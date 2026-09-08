@@ -1,6 +1,12 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9 and v0.2.10 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10 and v0.2.11 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.11 local verification (2026-09-09)
+
+- Figure 1 now uses the neutral title “Integrated evidence assessment” and removes the redundant note that the reporting groups were defined before FinnGen.
+- The 9/6 reporting-group counts, 101-record locus assessment and 0/101 composite result are unchanged. FinnGen remains a separate downstream alternative-outcome comparison, and the figure still states that it did not change the reporting groups and is not an independent replication.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.11 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.10 local verification (2026-09-09)
 
@@ -12,7 +18,7 @@ Verification history: real-data one-trait checks were completed on 2026-09-06; v
 
 - Figure 1 now separates the complete 249-trait forward and reverse MR screens. Only the forward screen produces the centered set of 15 Bonferroni-significant candidates.
 - Robustness and sensitivity, candidate-linked directionality and locus evidence are shown as parallel assessments of the same 15 forward candidates. Colocalization is therefore positioned after candidate selection, while the corresponding subset of the two complete reverse screens is used only for directionality.
-- The unnumbered stage headings and fill-only bands preserve the reading order without badge or border intersections. FinnGen remains a separate downstream alternative-outcome comparison and does not change the pre-FinnGen reporting groups.
+- The unnumbered stage headings and fill-only bands preserve the reading order without badge or border intersections. FinnGen remains a separate downstream alternative-outcome comparison and does not change the established reporting groups.
 - Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.9 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.8 local verification (2026-09-08)
@@ -24,14 +30,14 @@ Verification history: real-data one-trait checks were completed on 2026-09-06; v
 
 ## v0.2.7 local verification (2026-09-08)
 
-- Figure 1 now places the separate FinnGen alternative-outcome analysis after the evidence-integration stage. This matches the documented timing: the nine priority and six secondary reporting groups were defined before FinnGen and were not changed by its results.
+- Figure 1 now places the separate FinnGen alternative-outcome analysis after the evidence-integration stage. The nine priority and six secondary reporting groups were not changed by the FinnGen results.
 - FinnGen remains explicitly labelled as an alternative-outcome comparison rather than validation or independent replication.
 - Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.7 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.6 local verification (2026-09-08)
 
 - Figure 1 retains the branching connectors but omits the redundant branch label.
-- The FinnGen card now states that the priority and secondary reporting groups were unchanged. The evidence-integration card identifies those groups as having been defined before FinnGen, so the FinnGen arrow denotes contribution to interpretation rather than group formation.
+- The FinnGen card states that the priority and secondary reporting groups were unchanged, so the FinnGen arrow denotes contribution to interpretation rather than group formation.
 - Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.6 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.5 local verification (2026-09-07)
