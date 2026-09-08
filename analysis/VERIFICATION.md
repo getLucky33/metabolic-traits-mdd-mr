@@ -1,6 +1,13 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.9 local verification (2026-09-09)
+
+- Figure 1 now separates the complete 249-trait forward and reverse MR screens. Only the forward screen produces the centered set of 15 Bonferroni-significant candidates.
+- Robustness and sensitivity, candidate-linked directionality and locus evidence are shown as parallel assessments of the same 15 forward candidates. Colocalization is therefore positioned after candidate selection, while the corresponding subset of the two complete reverse screens is used only for directionality.
+- The unnumbered stage headings and fill-only bands preserve the reading order without badge or border intersections. FinnGen remains a separate downstream alternative-outcome comparison and does not change the pre-FinnGen reporting groups.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.9 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.8 local verification (2026-09-08)
 

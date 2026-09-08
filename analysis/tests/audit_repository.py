@@ -101,17 +101,30 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.8" not in description or "version: 0.2.8" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.8")
+if "Version: 0.2.9" not in description or "version: 0.2.9" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.9")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if "Complementary evidence layers" in figure_script:
-    errors.append("Figure 1 must retain its connectors without the redundant branch label")
-for phrase in ("reporting groups unchanged", "Groups defined before FinnGen"):
+for phrase in (
+    "Primary forward MR screen",
+    "Separate reverse-MR screens",
+    "Bonferroni-significant forward candidates",
+    "Same 15 forward candidates",
+    "complete 249-trait reverse screens",
+    "Cochran's Q, MR-Egger and MR-PRESSO",
+    "trait-specific analysis-window records",
+    "reporting groups unchanged",
+    "Groups defined before FinnGen",
+    '"  FW --> C"',
+    '"  C --> L"',
+    "Corresponding candidate subset used for directionality",
+):
     if phrase not in figure_script:
-        errors.append(f"Figure 1 does not state the reporting-group timing: {phrase}")
+        errors.append(f"Figure 1 is missing a required scope or topology marker: {phrase}")
+if "stage_label" in figure_script or "grid.circle" in figure_script:
+    errors.append("Figure 1 must use unnumbered stage headings without circular badges")
 attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-07 for the exact current release schemas and publication boundary stated in this file."
 if attestation not in access or "attestation remains pending" in readme or "attestation remains pending" in access:
     errors.append("responsible-author release-scope attestation is missing or still marked pending")

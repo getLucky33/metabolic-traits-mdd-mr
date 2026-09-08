@@ -4,7 +4,7 @@
 
 Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu.
 
-Version 0.2.8 has three reproducibility layers:
+Version 0.2.9 has three reproducibility layers:
 
 1. `scripts/make_figures.R` regenerates Figures 1–4 from the released aggregate tables.
 2. Released aggregate inputs replay the complete 249-trait four-level screens and the 6,434-row colocalization classification, with fixed count assertions.
@@ -27,7 +27,7 @@ Rscript analysis/tests/smoke_test.R
 
 `make_figures.R` verifies the aggregate-input hashes and regenerates PDF, SVG and 600-dpi PNG figures. `08_classify_coloc.R` must recover `14/87/822/3430/2081` records in the five frozen classes. `smoke_test.R` uses temporary synthetic data to exercise TwoSampleMR harmonization, random-effects IVW, MR-PRESSO parsing and the four-prior `coloc.abf` path. Synthetic results are never mixed with manuscript results.
 
-Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact Figure 2 plotting values, Figure 3 matrix values, Figure 4 classification-to-disposition counts and a checksum file beside the figures. Figure 2 includes the primary PGC result, the PGC sensitivity analysis excluding UK Biobank and the FinnGen R13 alternative outcome for each of the 15 forward candidates. Figure 4 recomputes the five ABF classifications across 6,434 analysis-window records and the disposition of the 101-record integrated-review subset from the released aggregate tables.
+Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact Figure 2 plotting values, Figure 3 matrix values, Figure 4 classification-to-disposition counts and a checksum file beside the figures. Figure 1 distinguishes the complete 249-trait forward and reverse screens from the subsequent assessment of the 15 Bonferroni-significant forward candidates. Figure 2 includes the primary PGC result, the PGC sensitivity analysis excluding UK Biobank and the FinnGen R13 alternative outcome for each candidate. Figure 4 recomputes the five ABF classifications across 6,434 analysis-window records and the disposition of the 101-record integrated-review subset from the released aggregate tables.
 
 On each push or pull request, the configured GitHub Actions workflow runs figure reproduction, code parsing, a secret/path scan and the synthetic analysis smoke test in a clean Linux environment.
 
