@@ -424,57 +424,338 @@ p3 <- ggplot(m3, aes(layer, trait_display, fill = state, label = value)) +
   geom_vline(xintercept = c(2.5, 6.5, 8.5, 10.5), colour = "#AAB5BC", linewidth = 0.35)
 save_gg(p3, "Figure_3", 12.2, 8.5)
 
-# Figure 4: evidence attrition with exact counts; panel area does not encode counts.
-stage1 <- data.table(
-  class = factor(c("Robust", "Prior-sensitive", "Distinct signal", "Trait-specific/low power", "Inconclusive"),
-                 levels = c("Robust", "Prior-sensitive", "Distinct signal", "Trait-specific/low power", "Inconclusive")),
-  n = c(sotv("n_coloc_robust"), sotv("n_coloc_prior"), sotv("n_coloc_distinct"),
-        sotv("n_coloc_tsp"), sotv("n_coloc_inconcl"))
+# Figure 4: colocalization classifications and the disposition of the 101-record subset.
+classification <- fread(file.path(DATA, "coloc_classification.tsv"))
+integrated <- fread(file.path(DATA, "integrated_mechanism_evidence.tsv"))
+if (nrow(classification) != 6434L || uniqueN(classification$locus_key) != 6434L) {
+  stop("The colocalization classification must contain 6,434 unique records")
+}
+if (nrow(integrated) != 101L || uniqueN(integrated$locus_key) != 101L ||
+    !all(integrated$locus_key %chin% classification$locus_key)) {
+  stop("The integrated review must contain 101 unique records drawn from the classification table")
+}
+if (any(as.logical(integrated$mechanism_eligible), na.rm = TRUE) ||
+    anyNA(as.logical(integrated$mechanism_eligible))) {
+  stop("Mechanism-support status must be FALSE for all 101 records")
+}
+
+class_order <- c(
+  "robust_coloc", "prior_sensitive_coloc", "distinct_signal",
+  "trait_specific_or_low_power", "inconclusive"
 )
-stage2 <- data.table(
-  class = factor(c("Complex-downgraded", "Forward-unassessable", "Prior-forward-consistent", "Forward-opposite"),
-                 levels = c("Complex-downgraded", "Forward-unassessable", "Prior-forward-consistent", "Forward-opposite")),
-  n = c(sotv("tier_complex"), sotv("tier_unassess"), sotv("tier_prior_consistent"), sotv("tier_opposite"))
+class_labels <- c(
+  robust_coloc = "Robust ABF",
+  prior_sensitive_coloc = "Prior-sensitive ABF",
+  distinct_signal = "Distinct signal",
+  trait_specific_or_low_power = "Trait-specific or low-power",
+  inconclusive = "Inconclusive"
 )
-stopifnot(sum(stage1$n) == sotv("coloc_records"), sum(stage2$n) == sotv("h4_evidence_rows"),
-          sotv("mechanism_eligible_true") == 0)
-pal1 <- c("#2A7F7F", "#79A8A8", "#D4A35E", "#8DA0AE", "#C5CDD2")
-pal2 <- c("#7A6E9D", "#A7A0BF", "#5A8F65", "#B95C5C")
-p4a <- ggplot(stage1, aes(x = 1, y = n, fill = class)) +
-  geom_col(width = 0.52, colour = "white", linewidth = 0.3) +
-  coord_flip() +
-  scale_fill_manual(values = pal1, labels = paste0(stage1$class, " (", stage1$n, ")")) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0)), labels = scales::comma) +
-  labs(title = paste0("a  All colocalization records (n = ", fmt("coloc_records"), ")"), x = NULL, y = NULL) +
-  theme_sr(8.6) +
-  theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank(),
-        legend.position = "bottom", legend.box = "vertical", legend.text = element_text(size = 7.4),
-        plot.title = element_text(face = "bold", size = 9.5)) +
-  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
-p4b <- ggplot(stage2, aes(x = 1, y = n, fill = class)) +
-  geom_col(width = 0.52, colour = "white", linewidth = 0.3) +
-  coord_flip() +
-  scale_fill_manual(values = pal2, labels = paste0(stage2$class, " (", stage2$n, ")")) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0))) +
-  labs(title = paste0("b  Records with shared-causal-variant posterior support (n = ", fmt("h4_evidence_rows"), ")"), x = NULL, y = NULL) +
-  theme_sr(8.6) +
-  theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.grid = element_blank(),
-        legend.position = "bottom", legend.box = "vertical", legend.text = element_text(size = 7.4),
-        plot.title = element_text(face = "bold", size = 9.5)) +
-  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
-p4c <- ggplot() +
-  annotate("rect", xmin = 0, xmax = 1, ymin = 0, ymax = 1, fill = "#F7F4EC", colour = "#DCCDAA", linewidth = 0.8) +
-  annotate("text", x = 0.5, y = 0.67, label = paste0(fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows")),
-           family = FONT, fontface = "bold", colour = COL$navy, size = 11) +
-  annotate("text", x = 0.5, y = 0.34, label = "met the composite mechanism-support criterion",
-           family = FONT, colour = COL$ink, size = 3.6) +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1), expand = FALSE) +
-  labs(title = "c  Composite mechanism support") +
-  theme_void(base_family = FONT) +
-  theme(plot.title = element_text(face = "bold", size = 9.5, colour = COL$ink),
-        plot.margin = margin(7, 9, 20, 7))
-p4 <- (p4a / p4b / p4c) + plot_layout(heights = c(1.2, 1.2, 0.85))
-save_gg(p4, "Figure_4", 10.8, 8.0)
+class_colours <- c(
+  robust_coloc = "#146C72",
+  prior_sensitive_coloc = "#79B7B0",
+  distinct_signal = "#D6A04B",
+  trait_specific_or_low_power = "#8FA3B0",
+  inconclusive = "#C9D1D6"
+)
+class_expected <- c(
+  robust_coloc = 14L,
+  prior_sensitive_coloc = 87L,
+  distinct_signal = 822L,
+  trait_specific_or_low_power = 3430L,
+  inconclusive = 2081L
+)
+class_counts <- classification[, .N, by = abf_class]
+class_values <- setNames(class_counts$N, class_counts$abf_class)[class_order]
+if (anyNA(class_values) || !identical(as.integer(class_values), unname(class_expected)) ||
+    sum(class_values) != sotv("coloc_records")) {
+  stop("The five colocalization-class counts do not match the frozen record")
+}
+
+tier_order <- c(
+  "abf_label_only_complex_downgraded",
+  "abf_label_only_forward_unassessable",
+  "abf_prior_sensitive_forward_consistent",
+  "abf_label_only_forward_opposite"
+)
+tier_colours <- c(
+  abf_label_only_complex_downgraded = "#7A6E9D",
+  abf_label_only_forward_unassessable = "#9DA8B1",
+  abf_prior_sensitive_forward_consistent = "#4E79A7",
+  abf_label_only_forward_opposite = "#B75A5A"
+)
+tier_expected <- c(
+  abf_label_only_complex_downgraded = 55L,
+  abf_label_only_forward_unassessable = 35L,
+  abf_prior_sensitive_forward_consistent = 10L,
+  abf_label_only_forward_opposite = 1L
+)
+tier_counts <- integrated[, .N, by = evidence_tier]
+tier_values <- setNames(tier_counts$N, tier_counts$evidence_tier)[tier_order]
+if (anyNA(tier_values) || !identical(as.integer(tier_values), unname(tier_expected)) ||
+    sum(tier_values) != sotv("h4_evidence_rows")) {
+  stop("The four integrated-disposition counts do not match the frozen record")
+}
+
+flow_expected <- data.table(
+  abf_class = c(
+    "robust_coloc", "robust_coloc",
+    "prior_sensitive_coloc", "prior_sensitive_coloc",
+    "prior_sensitive_coloc", "prior_sensitive_coloc"
+  ),
+  evidence_tier = c(
+    "abf_label_only_complex_downgraded",
+    "abf_label_only_forward_unassessable",
+    "abf_label_only_complex_downgraded",
+    "abf_label_only_forward_unassessable",
+    "abf_prior_sensitive_forward_consistent",
+    "abf_label_only_forward_opposite"
+  ),
+  n = c(4L, 10L, 51L, 25L, 10L, 1L)
+)
+flow_observed <- integrated[, .N, by = .(abf_class, evidence_tier)]
+setnames(flow_observed, "N", "n")
+setorder(flow_expected, abf_class, evidence_tier)
+setorder(flow_observed, abf_class, evidence_tier)
+if (!identical(flow_observed, flow_expected)) {
+  stop("The ABF-class to integrated-disposition cross-tabulation has changed")
+}
+
+figure4_plot_data <- rbindlist(list(
+  data.table(
+    panel = "all_records", source = class_order, destination = NA_character_,
+    n = as.integer(class_values), denominator = 6434L,
+    percent = 100 * as.integer(class_values) / 6434
+  ),
+  flow_expected[, .(
+    panel = "integrated_flow", source = abf_class, destination = evidence_tier,
+    n, denominator = 101L, percent = 100 * n / 101
+  )],
+  data.table(
+    panel = "composite_assessment", source = "mechanism_eligible",
+    destination = NA_character_, n = 0L, denominator = 101L, percent = 0
+  )
+), fill = TRUE)
+fwrite(figure4_plot_data, file.path(OUT, "Figure_4_plot_data.tsv"), sep = "\t", eol = "\n")
+
+fmt_n <- function(x) format(x, big.mark = ",", scientific = FALSE, trim = TRUE)
+fmt_pct <- function(x) sprintf("%.2f%%", 100 * x)
+
+draw_ribbon <- function(x0, x1, lo0, hi0, lo1, hi1, colour) {
+  t <- seq(0, 1, length.out = 80L)
+  smooth <- 3 * t^2 - 2 * t^3
+  x <- x0 + (x1 - x0) * t
+  upper <- hi0 + (hi1 - hi0) * smooth
+  lower <- lo0 + (lo1 - lo0) * smooth
+  grid.polygon(
+    x = unit(c(x, rev(x)), "npc"), y = unit(c(upper, rev(lower)), "npc"),
+    gp = gpar(fill = adjustcolor(colour, alpha.f = 0.34),
+              col = adjustcolor(colour, alpha.f = 0.62), lwd = 0.6)
+  )
+}
+
+draw_node <- function(x0, x1, lo, hi, fill) {
+  grid.roundrect(
+    x = (x0 + x1) / 2, y = (lo + hi) / 2,
+    width = x1 - x0, height = hi - lo, r = unit(1.0, "mm"),
+    gp = gpar(fill = fill, col = COL$white, lwd = 0.9)
+  )
+}
+
+draw_figure4 <- function() {
+  grid.newpage()
+  grid.rect(gp = gpar(fill = COL$white, col = NA))
+
+  grid.text("a", x = 0.035, y = 0.965, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 12, fontface = "bold", col = COL$ink))
+  grid.text("ABF classifications across 6,434 trait-specific analysis-window records",
+            x = 0.057, y = 0.965, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 11.2, fontface = "bold", col = COL$ink))
+
+  bar_left <- 0.055
+  bar_width <- 0.89
+  bar_y <- 0.865
+  bar_height <- 0.050
+  cumulative <- 0
+  for (id in class_order) {
+    width <- bar_width * class_expected[[id]] / 6434
+    grid.rect(x = bar_left + cumulative + width / 2, y = bar_y, width = width,
+              height = bar_height,
+              gp = gpar(fill = class_colours[[id]], col = COL$white, lwd = 0.45))
+    cumulative <- cumulative + width
+  }
+  grid.rect(x = bar_left + bar_width / 2, y = bar_y, width = bar_width,
+            height = bar_height, gp = gpar(fill = NA, col = COL$navy, lwd = 0.7))
+
+  support_n <- class_expected[["robust_coloc"]] + class_expected[["prior_sensitive_coloc"]]
+  support_mid <- bar_left + bar_width * support_n / 6434 / 2
+  grid.lines(x = unit(c(support_mid, support_mid, 0.235), "npc"),
+             y = unit(c(bar_y + bar_height / 2, 0.922, 0.922), "npc"),
+             gp = gpar(col = COL$navy, lwd = 0.8))
+  grid.text(
+    paste0(fmt_n(support_n), " / 6,434 (", fmt_pct(support_n / 6434),
+           ") entered integrated review"),
+    x = 0.242, y = 0.922, just = "left",
+    gp = gpar(fontfamily = FONT, fontsize = 8.2, fontface = "bold", col = COL$navy)
+  )
+
+  legend_item <- function(x, y, id) {
+    grid.rect(x = x, y = y, width = 0.012, height = 0.012,
+              gp = gpar(fill = class_colours[[id]], col = NA))
+    label <- paste0(class_labels[[id]], "  ", fmt_n(class_expected[[id]]),
+                    " (", fmt_pct(class_expected[[id]] / 6434), ")")
+    grid.text(label, x = x + 0.011, y = y, just = "left",
+              gp = gpar(fontfamily = FONT, fontsize = 7.6, col = COL$ink))
+  }
+  legend_item(0.060, 0.800, "robust_coloc")
+  legend_item(0.330, 0.800, "prior_sensitive_coloc")
+  legend_item(0.650, 0.800, "distinct_signal")
+  legend_item(0.060, 0.758, "trait_specific_or_low_power")
+  legend_item(0.520, 0.758, "inconclusive")
+
+  grid.text("b", x = 0.035, y = 0.700, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 12, fontface = "bold", col = COL$ink))
+  grid.text("Integrated disposition of records with posterior support favoring H4",
+            x = 0.057, y = 0.700, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 11.2, fontface = "bold", col = COL$ink))
+  grid.text("The 101-record subset is magnified; ribbon widths are proportional within this panel.",
+            x = 0.057, y = 0.670, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 7.3, col = COL$grey))
+  grid.text("ABF classification", x = 0.262, y = 0.630,
+            gp = gpar(fontfamily = FONT, fontsize = 7.0, fontface = "bold", col = COL$grey))
+  grid.text("Integrated disposition", x = 0.708, y = 0.630,
+            gp = gpar(fontfamily = FONT, fontsize = 7.0, fontface = "bold", col = COL$grey))
+
+  scale_y <- 0.25 / 101
+  source_gap <- 0.014
+  destination_gap <- 0.010
+  source_bounds <- list(
+    robust_coloc = c(lo = 0.600 - 14 * scale_y, hi = 0.600),
+    prior_sensitive_coloc = c(
+      lo = 0.600 - 14 * scale_y - source_gap - 87 * scale_y,
+      hi = 0.600 - 14 * scale_y - source_gap
+    )
+  )
+  destination_bounds <- list()
+  destination_top <- 0.600
+  for (id in tier_order) {
+    destination_bounds[[id]] <- c(
+      lo = destination_top - tier_expected[[id]] * scale_y,
+      hi = destination_top
+    )
+    destination_top <- destination_bounds[[id]][["lo"]] - destination_gap
+  }
+
+  flows <- copy(flow_expected)
+  flows[, `:=`(source_lo = NA_real_, source_hi = NA_real_,
+               destination_lo = NA_real_, destination_hi = NA_real_)]
+  source_cursor <- vapply(source_bounds, function(z) z[["hi"]], numeric(1))
+  for (i in seq_len(nrow(flows))) {
+    id <- flows$abf_class[[i]]
+    flows$source_hi[[i]] <- source_cursor[[id]]
+    flows$source_lo[[i]] <- source_cursor[[id]] - flows$n[[i]] * scale_y
+    source_cursor[[id]] <- flows$source_lo[[i]]
+  }
+  destination_cursor <- vapply(destination_bounds, function(z) z[["hi"]], numeric(1))
+  for (destination in tier_order) {
+    for (source in c("robust_coloc", "prior_sensitive_coloc")) {
+      i <- which(flows$evidence_tier == destination & flows$abf_class == source)
+      if (!length(i)) next
+      flows$destination_hi[[i]] <- destination_cursor[[destination]]
+      flows$destination_lo[[i]] <- destination_cursor[[destination]] - flows$n[[i]] * scale_y
+      destination_cursor[[destination]] <- flows$destination_lo[[i]]
+    }
+  }
+  for (i in order(flows$n, decreasing = TRUE)) {
+    draw_ribbon(
+      0.275, 0.695, flows$source_lo[[i]], flows$source_hi[[i]],
+      flows$destination_lo[[i]], flows$destination_hi[[i]],
+      class_colours[[flows$abf_class[[i]]]]
+    )
+  }
+  for (id in names(source_bounds)) {
+    bounds <- source_bounds[[id]]
+    draw_node(0.250, 0.275, bounds[["lo"]], bounds[["hi"]], class_colours[[id]])
+    grid.text(paste0(class_labels[[id]], "\n", fmt_n(class_expected[[id]])),
+              x = 0.235, y = mean(bounds), just = "right",
+              gp = gpar(fontfamily = FONT, fontsize = 7.4, fontface = "bold",
+                        col = COL$ink, lineheight = 1.05))
+  }
+
+  tier_text <- c(
+    abf_label_only_complex_downgraded = paste(
+      "Complex-region downgraded", "55 total", "4 robust + 51 prior-sensitive", sep = "\n"
+    ),
+    abf_label_only_forward_unassessable = paste(
+      "Regional forward direction", "unassessable (35 total)",
+      "10 robust + 25 prior-sensitive", sep = "\n"
+    ),
+    abf_prior_sensitive_forward_consistent = paste(
+      "Prior-sensitive and", "forward-consistent (10)", "all prior-sensitive", sep = "\n"
+    ),
+    abf_label_only_forward_opposite = paste(
+      "Opposite regional direction", "1 prior-sensitive record", sep = "\n"
+    )
+  )
+  tier_label_y <- vapply(destination_bounds, mean, numeric(1))
+  tier_label_y[["abf_prior_sensitive_forward_consistent"]] <- 0.350
+  tier_label_y[["abf_label_only_forward_opposite"]] <- 0.300
+  for (id in tier_order) {
+    bounds <- destination_bounds[[id]]
+    draw_node(0.695, 0.720, bounds[["lo"]], bounds[["hi"]], tier_colours[[id]])
+    grid.lines(x = unit(c(0.720, 0.730, 0.735), "npc"),
+               y = unit(c(mean(bounds), mean(bounds), tier_label_y[[id]]), "npc"),
+               gp = gpar(col = tier_colours[[id]], lwd = 0.7))
+    grid.text(tier_text[[id]], x = 0.740, y = tier_label_y[[id]], just = "left",
+              gp = gpar(fontfamily = FONT, fontsize = 6.8, col = COL$ink, lineheight = 1.03))
+  }
+
+  grid.text("c", x = 0.035, y = 0.260, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 12, fontface = "bold", col = COL$ink))
+  grid.text("Composite mechanism-support assessment", x = 0.057, y = 0.260, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 11.2, fontface = "bold", col = COL$ink))
+  grid.roundrect(x = 0.50, y = 0.155, width = 0.89, height = 0.155,
+                 r = unit(2.2, "mm"),
+                 gp = gpar(fill = "#F7F9FA", col = "#9CB2C8", lwd = 1.1))
+  grid.text("0 / 101", x = 0.160, y = 0.166,
+            gp = gpar(fontfamily = FONT, fontsize = 28, fontface = "bold", col = COL$navy))
+  grid.text("No record met every documented criterion", x = 0.285, y = 0.190, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 10.2, fontface = "bold", col = COL$ink))
+  grid.text(
+    paste(
+      "Required jointly: robust ABF classification; a non-complex region outside predefined",
+      "pleiotropic regions; and assessable, directionally concordant forward and reverse",
+      "regional IVW sensitivity estimates.", sep = "\n"
+    ),
+    x = 0.285, y = 0.135, just = "left",
+    gp = gpar(fontfamily = FONT, fontsize = 7.6, col = COL$ink, lineheight = 1.12)
+  )
+  grid.text("ABF, approximate Bayes factor; H4, shared-causal-variant hypothesis.",
+            x = 0.055, y = 0.052, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 7.2, col = COL$grey))
+  grid.text("Counts are trait-specific analysis-window records, not independent physical loci.",
+            x = 0.055, y = 0.032, just = "left",
+            gp = gpar(fontfamily = FONT, fontsize = 7.2, col = COL$grey))
+  grid.text(
+    "ABF classifications are model- and prior-dependent and do not establish mediation or a trait-specific causal mechanism.",
+    x = 0.055, y = 0.014, just = "left",
+    gp = gpar(fontfamily = FONT, fontsize = 7.2, col = COL$grey)
+  )
+}
+
+figure4_width <- 7.2
+figure4_height <- 6.6
+cairo_pdf(file.path(OUT, "Figure_4.pdf"), width = figure4_width,
+          height = figure4_height, bg = COL$white)
+draw_figure4()
+dev.off()
+png(file.path(OUT, "Figure_4_600dpi.png"), width = figure4_width,
+    height = figure4_height, units = "in", res = 600, bg = COL$white)
+draw_figure4()
+dev.off()
+svg(file.path(OUT, "Figure_4.svg"), width = figure4_width,
+    height = figure4_height, family = FONT, bg = COL$white)
+draw_figure4()
+dev.off()
 
 cat("Scientific Reports Figures 1-4 regenerated from frozen sources\n")
 cat(list.files(OUT, pattern = "^Figure_[1-4]", full.names = FALSE), sep = "\n")
@@ -486,9 +767,14 @@ expected <- c(
   file.path(OUT, "Figure_1_source.mermaid"),
   file.path(OUT, "Figure_2_3_trait_labels.tsv"),
   file.path(OUT, "Figure_2_plot_data.tsv"),
-  file.path(OUT, "Figure_3_matrix_data.tsv")
+  file.path(OUT, "Figure_3_matrix_data.tsv"),
+  file.path(OUT, "Figure_4_plot_data.tsv")
 )
-if (!all(file.exists(expected)) || any(file.info(expected)$size < 1000)) {
+expected_sizes <- file.info(expected)$size
+small_text_output <- grepl("\\.(tsv|mermaid)$", expected)
+if (!all(file.exists(expected)) ||
+    any(expected_sizes[small_text_output] < 100) ||
+    any(expected_sizes[!small_text_output] < 1000)) {
   stop("One or more expected figure outputs are absent or unexpectedly small")
 }
 checksums <- data.table(

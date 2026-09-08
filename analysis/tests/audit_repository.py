@@ -101,8 +101,8 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.7" not in description or "version: 0.2.7" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.7")
+if "Version: 0.2.8" not in description or "version: 0.2.8" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.8")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
@@ -219,6 +219,20 @@ expected_tiers = {
 }
 if counts(integrated, "evidence_tier") != expected_tiers:
     errors.append("integrated-evidence tier counts differ from 55/35/10/1")
+expected_flows = {
+    ("robust_coloc", "abf_label_only_complex_downgraded"): 4,
+    ("robust_coloc", "abf_label_only_forward_unassessable"): 10,
+    ("prior_sensitive_coloc", "abf_label_only_complex_downgraded"): 51,
+    ("prior_sensitive_coloc", "abf_label_only_forward_unassessable"): 25,
+    ("prior_sensitive_coloc", "abf_prior_sensitive_forward_consistent"): 10,
+    ("prior_sensitive_coloc", "abf_label_only_forward_opposite"): 1,
+}
+observed_flows = {}
+for row in integrated:
+    key = (row["abf_class"], row["evidence_tier"])
+    observed_flows[key] = observed_flows.get(key, 0) + 1
+if observed_flows != expected_flows:
+    errors.append("ABF-class to integrated-disposition counts differ from 4/10/51/25/10/1")
 
 allowed_support = {"FDR-supported", "nominally-supported", "no-nominal-support"}
 legacy_support_markers = (

@@ -1,6 +1,13 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6 and v0.2.7 local release checks were completed on 2026-09-08. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.8 local verification (2026-09-08)
+
+- Figure 4 now combines a proportional overview of all 6,434 colocalization classifications with a magnified flow diagram for the 101 records entering integrated review and a neutral 0/101 composite-assessment endpoint.
+- The plotted flow is recalculated from the released row-level aggregate tables: robust ABF records lead to 4 complex-region downgrades and 10 unassessable forward regional directions; prior-sensitive ABF records lead to 51 complex-region downgrades, 25 unassessable forward regional directions, 10 concordant but prior-sensitive records and 1 opposite regional direction.
+- The plotting script writes `Figure_4_plot_data.tsv` and checks the five classification counts, four disposition counts, six cross-classification paths and zero mechanism-eligible records before rendering.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.8 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.7 local verification (2026-09-08)
 
