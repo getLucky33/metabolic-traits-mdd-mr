@@ -1,6 +1,12 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6 local release checks were completed on 2026-09-08. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.6 local verification (2026-09-08)
+
+- Figure 1 retains the branching connectors but omits the redundant branch label.
+- The FinnGen card now states that the priority and secondary reporting groups were unchanged. The evidence-integration card identifies those groups as having been defined before FinnGen, so the FinnGen arrow denotes contribution to interpretation rather than group formation.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.6 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.5 local verification (2026-09-07)
 

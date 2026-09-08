@@ -172,10 +172,6 @@ draw_figure1 <- function() {
     "#B9DCEB", body_size = 6.8, border = "#8EB9CC", title_size = 8.8
   )
 
-  grid.rect(x = 0.50, y = 0.608, width = 0.26, height = 0.026,
-            gp = gpar(fill = COL$white, col = NA))
-  grid.text("Complementary evidence layers", x = 0.50, y = 0.608,
-            gp = gpar(fontfamily = FONT, fontsize = 8.0, fontface = "bold", col = COL$grey))
   card(
     0.18, 0.480, 0.28, 0.17, "Robustness and sensitivity",
     "Harmonization and five estimators\nQ, MR-Egger and MR-PRESSO\nPalindromic-variant sensitivity\nPleiotropic-region and shared-IV exclusions\nPGC excluding UK Biobank",
@@ -197,17 +193,18 @@ draw_figure1 <- function() {
     0.50, 0.287, 0.68, 0.085, "Separate alternative-outcome analysis",
     paste0("FinnGen R13 register-based depression: ", fmt("finngen_cases"), " cases / ",
            fmt("finngen_controls"), " controls\n", fmt("fg13_dir_same"), "/",
-           fmt("matrix_fg13_rows"), " directionally concordant; not an independent replication"),
-    "#D8E7D7", body_size = 6.5, border = "#AFC7AD", title_size = 8.5
+           fmt("matrix_fg13_rows"), " directionally concordant; reporting groups unchanged\n",
+           "Not an independent replication"),
+    "#D8E7D7", body_size = 5.9, border = "#AFC7AD", title_size = 8.5
   )
   card(
     0.50, 0.163, 0.78, 0.103, "Evidence integration",
-    paste0(fmt("groups_priority"), " priority reporting traits | ",
-           fmt("groups_secondary"), " secondary reporting traits\n",
+    paste0("Groups defined before FinnGen: ", fmt("groups_priority"), " priority traits | ",
+           fmt("groups_secondary"), " secondary traits\n",
            fmt("coloc_records"), " records narrowed to ",
            fmt("h4_evidence_rows"), " with shared-variant posterior support\n",
            fmt("mechanism_eligible_true"), " met the composite mechanism-support criterion"),
-    "#C9D8E8", body_size = 7.4, border = "#9CB2C8", title_size = 9.1
+    "#C9D8E8", body_size = 7.1, border = "#9CB2C8", title_size = 9.1
   )
   popViewport()
 }
@@ -220,8 +217,8 @@ mermaid <- c(
   "  R[\"Robustness and sensitivity<br/>Harmonization and five estimators<br/>Q, MR-Egger, MR-PRESSO and exclusion analyses<br/>PGC outcome excluding UK Biobank\"]",
   "  D[\"Directionality<br/>Steiger directionality test<br/>Reverse Mendelian randomization with two PGC instrument sets<br/>Alternative prevalence assumptions\"]",
   paste0("  L[\"Locus evidence<br/>ABF colocalization; regional, MHC and complex-region checks<br/>Exploratory conditional / SuSiE checks<br/>", fmt("coloc_records"), " analysis-window records; ", fmt("h4_evidence_rows"), " with shared-variant posterior support\"]"),
-  paste0("  F[\"Separate FinnGen R13 alternative-outcome analysis<br/>", fmt("finngen_cases"), " cases / ", fmt("finngen_controls"), " controls<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant; not an independent replication\"]"),
-  paste0("  G[\"Evidence integration<br/>", fmt("groups_priority"), " priority / ", fmt("groups_secondary"), " secondary<br/>", fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), " met the composite criterion\"]"),
+  paste0("  F[\"Separate FinnGen R13 alternative-outcome analysis<br/>", fmt("finngen_cases"), " cases / ", fmt("finngen_controls"), " controls<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant; reporting groups unchanged<br/>Not an independent replication\"]"),
+  paste0("  G[\"Evidence integration<br/>Groups defined before FinnGen: ", fmt("groups_priority"), " priority / ", fmt("groups_secondary"), " secondary<br/>", fmt("coloc_records"), " records; ", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), " met the composite criterion\"]"),
   "  E --> P",
   "  O --> P",
   "  P --> R",
