@@ -173,9 +173,9 @@ draw_figure1 <- function() {
     text_at(paste(lines, collapse = "\n"), x, body_y,
             size = if (is.null(footer)) 6.7 else 6.25, lineheight = 1.16)
     if (!is.null(footer)) {
-      rounded_box(x, y - 0.062, w - 0.026, 0.052, fill = fig$pale, border = fig$line,
+      rounded_box(x, y - 0.062, w - 0.026, 0.058, fill = fig$pale, border = fig$line,
                   lwd = 0.85, radius = 1.5)
-      text_at(footer, x, y - 0.062, size = 5.05, lineheight = 1.04)
+      text_at(footer, x, y - 0.062, size = 6.4, lineheight = 1.04)
     }
   }
 
@@ -237,22 +237,25 @@ draw_figure1 <- function() {
   text_at("Bidirectional Mendelian randomization screening",
           0.53, 0.751, size = 8.7, face = "bold", colour = fig$navy)
 
-  rounded_box(0.35, 0.687, 0.34, 0.059, fill = fig$muted_blue,
+  rounded_box(0.35, 0.685, 0.34, 0.076, fill = fig$muted_blue,
               border = fig$blue_line, lwd = 0.9, radius = 1.5)
-  text_at("Primary forward MR screen", 0.35, 0.701, size = 6.9,
+  text_at("Primary forward MR screen", 0.35, 0.708, size = 7.2,
           face = "bold", colour = fig$navy)
-  text_at(paste0("All ", fmt("n_traits_metabolites"), " traits as exposures; primary PGC outcome\n",
-                 "MAF-specific thresholds, F at least 10, LD clumping and random-effects IVW"),
-          0.35, 0.678, size = 4.65, lineheight = 1.04)
+  text_at(paste0("All ", fmt("n_traits_metabolites"), " traits as exposures\n",
+                 "Primary PGC outcome\n",
+                 "MAF-specific thresholds; F at least 10\n",
+                 "LD clumping; multiplicative random-effects IVW"),
+          0.35, 0.673, size = 6.5, lineheight = 1.03)
 
-  rounded_box(0.72, 0.687, 0.34, 0.059, fill = "#F0EDF6",
+  rounded_box(0.72, 0.685, 0.34, 0.076, fill = "#F0EDF6",
               border = fig$violet_line, lwd = 0.9, radius = 1.5)
-  text_at("Separate reverse-MR screens", 0.72, 0.701, size = 6.9,
+  text_at("Separate reverse-MR screens", 0.72, 0.708, size = 7.2,
           face = "bold", colour = fig$navy)
-  text_at(paste0("PGC liability as exposure; all ", fmt("n_traits_metabolites"), " traits as outcomes\n",
-                 "Primary and UK Biobank-excluded PGC instrument sets\n",
-                 "Corresponding candidate subset used for directionality"),
-          0.72, 0.676, size = 4.55, lineheight = 1.03)
+  text_at(paste0("PGC liability as exposure\n",
+                 "All ", fmt("n_traits_metabolites"), " traits as outcomes\n",
+                 "Primary and UK Biobank-excluded instrument sets\n",
+                 "Candidate subset used for directionality"),
+          0.72, 0.673, size = 6.5, lineheight = 1.03)
 
   rounded_box(0.53, 0.623, 0.35, 0.036, fill = fig$blue,
               border = fig$blue_line, lwd = 1.1, radius = 1.5)
@@ -266,7 +269,7 @@ draw_figure1 <- function() {
       "Regional and shared-instrument exclusions"),
     fig$teal, fig$teal_line,
     paste0("UK Biobank-excluded PGC sensitivity\n", fmt("pgc_nb_cases"), " cases   ",
-           fmt("pgc_nb_controls"), " controls\nSame 15 summarized; full 249-trait screen reported")
+           fmt("pgc_nb_controls"), " controls\nSame 15 summarized; full screen reported")
   )
   evaluation_card(
     0.53, "Directionality",
@@ -281,7 +284,7 @@ draw_figure1 <- function() {
       "ABF colocalization in both PGC outcomes", "Regional direction checks",
       "MHC and complex-region assessment"),
     fig$peach, fig$peach_line,
-    paste0(fmt("coloc_records"), " trait-specific analysis-window records")
+    paste0(fmt("coloc_records"), " trait-specific\nanalysis-window records")
   )
 
   rounded_box(0.53, 0.205, 0.77, 0.105, fill = fig$white,
@@ -303,26 +306,26 @@ draw_figure1 <- function() {
   text_at(paste0(fmt("h4_evidence_rows"), " with shared-variant posterior support"),
           0.715, 0.198, size = 6.4, face = "bold", colour = fig$navy)
   text_at(paste0(fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"),
-                 " records met the composite mechanism-support criterion"),
-          0.715, 0.169, size = 5.55, colour = fig$slate)
+                 " records met the composite\nmechanism-support criterion"),
+          0.715, 0.169, size = 6.3, colour = fig$slate, lineheight = 1.06)
 
-  rounded_box(0.53, 0.050, 0.70, 0.065, fill = fig$white,
+  rounded_box(0.53, 0.050, 0.70, 0.075, fill = fig$white,
               border = fig$green_line, lwd = 1.25, lty = 2)
-  grid.roundrect(x = 0.53, y = 0.074, width = 0.70, height = 0.026,
+  grid.roundrect(x = 0.53, y = 0.078, width = 0.70, height = 0.026,
                  r = unit(1.8, "mm"), gp = gpar(fill = fig$green,
                                                 col = fig$green_line, lwd = 1.2, lty = 2))
-  grid.rect(x = 0.53, y = 0.070, width = 0.697, height = 0.008,
+  grid.rect(x = 0.53, y = 0.074, width = 0.697, height = 0.008,
             gp = gpar(fill = fig$green, col = NA))
   text_at("Separate FinnGen R13 alternative-outcome comparison",
-          0.53, 0.074, size = 7.4, face = "bold", colour = fig$navy)
+          0.53, 0.078, size = 7.4, face = "bold", colour = fig$navy)
   text_at(
-    paste0(fmt("finngen_cases"), " cases   ", fmt("finngen_controls"), " controls     ",
+    paste0(fmt("finngen_cases"), " cases   ", fmt("finngen_controls"), " controls\n",
            fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant\n",
            support_counts[["FDR-supported"]], " FDR-supported   ",
            support_counts[["nominally-supported"]], " nominally supported   ",
            support_counts[["no-nominal-support"]], " without nominal support\n",
            "Reporting groups unchanged; not an independent replication"),
-    0.53, 0.035, size = 5.05, lineheight = 1.06
+    0.53, 0.041, size = 6.2, lineheight = 1.03
   )
 
   popViewport()

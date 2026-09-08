@@ -1,6 +1,12 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9 and v0.2.10 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.10 local verification (2026-09-09)
+
+- Figure 1 retains the verified v0.2.9 topology and removes no scientific content, but restructures the dense forward- and reverse-screen descriptions into shorter lines and enlarges the smallest workflow text for publication-size readability.
+- The UK Biobank-excluded, locus-record and FinnGen summaries were reflowed without changing their registered counts or interpretation.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.10 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.9 local verification (2026-09-09)
 
