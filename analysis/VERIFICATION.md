@@ -1,6 +1,12 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6 local release checks were completed on 2026-09-08. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6 and v0.2.7 local release checks were completed on 2026-09-08. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.7 local verification (2026-09-08)
+
+- Figure 1 now places the separate FinnGen alternative-outcome analysis after the evidence-integration stage. This matches the documented timing: the nine priority and six secondary reporting groups were defined before FinnGen and were not changed by its results.
+- FinnGen remains explicitly labelled as an alternative-outcome comparison rather than validation or independent replication.
+- Local repository audit, R parsing, deterministic figure generation and the synthetic MR/colocalization smoke test passed. The v0.2.7 tag and release must point to the verified commit whose clean-checkout GitHub Actions run passed.
 
 ## v0.2.6 local verification (2026-09-08)
 

@@ -101,8 +101,8 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.6" not in description or "version: 0.2.6" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.6")
+if "Version: 0.2.7" not in description or "version: 0.2.7" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.7")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")

@@ -148,9 +148,8 @@ draw_figure1 <- function() {
   connector(0.50, 0.395, 0.50, 0.365, arrow_end = FALSE)
   connector(0.82, 0.395, 0.82, 0.365, arrow_end = FALSE)
   connector(0.18, 0.365, 0.82, 0.365, arrow_end = FALSE)
-  connector_path(c(0.18, 0.075, 0.075, 0.11), c(0.365, 0.365, 0.163, 0.163))
-  connector_path(c(0.79, 0.985, 0.985, 0.84), c(0.670, 0.670, 0.287, 0.287))
-  connector(0.50, 0.245, 0.50, 0.218)
+  connector(0.50, 0.365, 0.50, 0.339)
+  connector(0.50, 0.235, 0.50, 0.195)
 
   card(
     0.27, 0.865, 0.40, 0.14, "Exposure GWAS",
@@ -190,7 +189,7 @@ draw_figure1 <- function() {
     "#F4DCCB", body_size = 5.6, title_size = 8.4
   )
   card(
-    0.50, 0.287, 0.68, 0.085, "Separate alternative-outcome analysis",
+    0.50, 0.152, 0.68, 0.085, "Separate alternative-outcome analysis",
     paste0("FinnGen R13 register-based depression: ", fmt("finngen_cases"), " cases / ",
            fmt("finngen_controls"), " controls\n", fmt("fg13_dir_same"), "/",
            fmt("matrix_fg13_rows"), " directionally concordant; reporting groups unchanged\n",
@@ -198,7 +197,7 @@ draw_figure1 <- function() {
     "#D8E7D7", body_size = 5.9, border = "#AFC7AD", title_size = 8.5
   )
   card(
-    0.50, 0.163, 0.78, 0.103, "Evidence integration",
+    0.50, 0.287, 0.78, 0.103, "Evidence integration",
     paste0("Groups defined before FinnGen: ", fmt("groups_priority"), " priority traits | ",
            fmt("groups_secondary"), " secondary traits\n",
            fmt("coloc_records"), " records narrowed to ",
@@ -224,16 +223,15 @@ mermaid <- c(
   "  P --> R",
   "  P --> D",
   "  P --> L",
-  "  P --> F",
   "  R --> G",
   "  D --> G",
   "  L --> G",
-  "  F --> G"
+  "  G --> F"
 )
 stopifnot(
-  all(c("  P --> R", "  P --> D", "  P --> L", "  P --> F",
-        "  R --> G", "  D --> G", "  L --> G", "  F --> G") %in% mermaid),
-  !any(c("  R --> F", "  D --> F", "  L --> F") %in% mermaid)
+  all(c("  P --> R", "  P --> D", "  P --> L",
+        "  R --> G", "  D --> G", "  L --> G", "  G --> F") %in% mermaid),
+  !any(c("  P --> F", "  R --> F", "  D --> F", "  L --> F", "  F --> G") %in% mermaid)
 )
 writeBin(
   charToRaw(paste0(paste(mermaid, collapse = "\n"), "\n")),
