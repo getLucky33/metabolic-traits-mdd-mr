@@ -12,4 +12,4 @@ stage	principal_outputs	manuscript_or_figure_use
 10_build_locus_manifest.R	locus_manifest.tsv	Anchor-clustered GRCh38 locus windows
 11_extract_locus_windows.R	*_window.tsv; locus_window_extraction_qc.tsv	Prepared rsID-mapped regional exposure inputs
 released_aggregate_reference	forward_screen_249.tsv; forward_noukbb_15.tsv; reverse_screen_main_249.tsv; reverse_screen_noukbb_249.tsv; coloc_*; integrated_mechanism_evidence.tsv; finngen_*; susie_*	Path-free central result audit and colocalization classification replay
-make_figures.R	Figures 1-4 in PDF/SVG/PNG; Figure_2_plot_data.tsv; Figure_3_matrix_data.tsv; Figure_4_plot_data.tsv; figure_checksums.tsv	Journal figures and reporting-layer integrity checks, including all three Figure 2 outcome datasets and the Figure 4 classification-to-disposition flow
+make_figures.R	Figures 1-4 in PDF/SVG/PNG; Figure_2_plot_data.tsv; Figure_3_matrix_data.tsv; Figure_4_plot_data.tsv; figure_checksums.tsv	Journal figures and reporting-layer integrity checks, including the parallel direction-specific Figure 1 topology, all three Figure 2 outcome datasets and the Figure 4 classification-to-disposition flow

@@ -147,7 +147,8 @@ draw_figure1 <- function() {
     text_at(toupper(label), 0.070, y, size = 7.0, face = "bold", colour = fig$slate,
             just = "left")
   }
-  header_card <- function(x, y, w, h, title, body, fill, border, body_size = 7.2) {
+  header_card <- function(x, y, w, h, title, body, fill, border, body_size = 7.2,
+                          body_lineheight = 1.17) {
     rounded_box(x, y, w, h, fill = fig$white, border = border, lwd = 1.25)
     header_h <- 0.041
     grid.roundrect(
@@ -157,7 +158,8 @@ draw_figure1 <- function() {
     grid.rect(x = x, y = y + (h - header_h) / 2 - 0.0065,
               width = w - 0.003, height = 0.013, gp = gpar(fill = fill, col = NA))
     text_at(title, x, y + (h - header_h) / 2, size = 8.8, face = "bold", colour = fig$navy)
-    text_at(body, x, y - header_h * 0.32, size = body_size, lineheight = 1.17)
+    text_at(body, x, y - header_h * 0.32, size = body_size,
+            lineheight = body_lineheight)
   }
   evaluation_card <- function(x, title, lines, fill, border, footer = NULL) {
     y <- 0.415
@@ -196,19 +198,21 @@ draw_figure1 <- function() {
 
   stage_heading("GWAS inputs", 0.946)
   stage_heading("Bidirectional MR screening", 0.792)
-  stage_heading("Complementary evidence assessment", 0.558)
+  stage_heading("Candidate-level evidence assessment", 0.558)
   stage_heading("Evidence synthesis", 0.285)
   stage_heading("Alternative outcome", 0.105)
 
-  # Connectors are drawn before cards so their ends remain visually clean.
-  connector(0.29, 0.825, 0.40, 0.770)
-  connector(0.76, 0.825, 0.66, 0.770)
-  connector(0.43, 0.657, 0.43, 0.642)
-  connector(0.53, 0.605, 0.53, 0.530, end = FALSE)
-  connector(0.205, 0.530, 0.855, 0.530, end = FALSE)
+  # The two MR directions have separate outputs. Only the primary forward
+  # screen selects the candidate set used by all three downstream assessments.
+  connector(0.29, 0.825, 0.40, 0.785)
+  connector(0.76, 0.825, 0.66, 0.785)
+  connector(0.35, 0.647, 0.35, 0.642)
+  connector(0.72, 0.647, 0.72, 0.642)
+  connector(0.35, 0.604, 0.35, 0.530, end = FALSE)
+  connector(0.205, 0.530, 0.760, 0.530, end = FALSE)
   connector(0.205, 0.530, 0.205, 0.515)
   connector(0.53, 0.530, 0.53, 0.515)
-  connector(0.855, 0.530, 0.855, 0.515)
+  connector(0.760, 0.530, 0.760, 0.515)
   connector(0.205, 0.315, 0.205, 0.300, end = FALSE)
   connector(0.53, 0.315, 0.53, 0.300, end = FALSE)
   connector(0.855, 0.315, 0.855, 0.300, end = FALSE)
@@ -217,50 +221,80 @@ draw_figure1 <- function() {
   connector(0.53, 0.153, 0.53, 0.086, dashed = TRUE)
 
   header_card(
-    0.285, 0.880, 0.405, 0.105, "Exposure GWAS",
+    0.285, 0.880, 0.405, 0.105, "Circulating metabolic-trait GWAS",
     paste0(fmt("n_traits_metabolites"), " NMR-derived circulating metabolic traits\n",
            "Estonian Biobank and UK Biobank   N = ", fmt("tambets_meta_eur")),
     fig$yellow, fig$yellow_line
   )
   header_card(
-    0.755, 0.880, 0.405, 0.105, "Primary depression outcome GWAS",
-    paste0("PGC major depression\n", fmt("pgc_main_cases"), " cases   ",
-           fmt("pgc_main_controls"), " controls"),
-    fig$yellow, fig$yellow_line
+    0.755, 0.880, 0.405, 0.105, "PGC major-depression GWAS",
+    paste0("Primary: ", fmt("pgc_main_cases"), " cases   ",
+           fmt("pgc_main_controls"), " controls\n",
+           "UK Biobank-excluded: ", fmt("pgc_nb_cases"), " cases\n",
+           fmt("pgc_nb_controls"), " controls"),
+    fig$yellow, fig$yellow_line, body_size = 6.35, body_lineheight = 1.04
   )
 
-  rounded_box(0.53, 0.700, 0.77, 0.140, fill = fig$white, border = fig$blue_line, lwd = 1.3)
+  rounded_box(0.53, 0.690, 0.77, 0.180, fill = fig$white,
+              border = fig$blue_line, lwd = 1.3)
   grid.roundrect(x = 0.53, y = 0.751, width = 0.77, height = 0.034,
                  r = unit(2.0, "mm"), gp = gpar(fill = fig$blue, col = fig$blue_line, lwd = 1.3))
   grid.rect(x = 0.53, y = 0.745, width = 0.767, height = 0.011,
             gp = gpar(fill = fig$blue, col = NA))
-  text_at("Bidirectional Mendelian randomization screening",
+  text_at("Parallel direction-specific MR analyses",
           0.53, 0.751, size = 8.7, face = "bold", colour = fig$navy)
+  text_at("Exposure-specific instruments selected separately in each direction",
+          0.53, 0.727, size = 5.8, colour = fig$slate)
 
   rounded_box(0.35, 0.685, 0.34, 0.076, fill = fig$muted_blue,
               border = fig$blue_line, lwd = 0.9, radius = 1.5)
-  text_at("Primary forward MR screen", 0.35, 0.708, size = 7.2,
+  text_at("Forward MR", 0.35, 0.706, size = 7.2,
           face = "bold", colour = fig$navy)
-  text_at(paste0("All ", fmt("n_traits_metabolites"), " traits as exposures\n",
-                 "Primary PGC outcome\n",
-                 "MAF-specific thresholds; F at least 10\n",
-                 "LD clumping; multiplicative random-effects IVW"),
-          0.35, 0.673, size = 6.5, lineheight = 1.03)
+  text_at(
+    paste0(fmt("n_traits_metabolites"), " metabolic traits as exposures\n",
+           "PGC major depression as outcome\n",
+           "Primary and UK Biobank-excluded screens"),
+    0.35, 0.674, size = 6.5, lineheight = 1.05
+  )
 
   rounded_box(0.72, 0.685, 0.34, 0.076, fill = "#F0EDF6",
               border = fig$violet_line, lwd = 0.9, radius = 1.5)
-  text_at("Separate reverse-MR screens", 0.72, 0.708, size = 7.2,
+  text_at("Reverse MR", 0.72, 0.706, size = 7.2,
           face = "bold", colour = fig$navy)
-  text_at(paste0("PGC liability as exposure\n",
-                 "All ", fmt("n_traits_metabolites"), " traits as outcomes\n",
-                 "Primary and UK Biobank-excluded instrument sets\n",
-                 "Candidate subset used for directionality"),
-          0.72, 0.673, size = 6.5, lineheight = 1.03)
+  text_at(
+    paste0("Genetic liability to MDD as exposure\n",
+           fmt("n_traits_metabolites"), " metabolic traits as outcomes\n",
+           "Primary and UK Biobank-excluded screens"),
+    0.72, 0.674, size = 6.5, lineheight = 1.05
+  )
 
-  rounded_box(0.53, 0.623, 0.35, 0.036, fill = fig$blue,
+  rounded_box(0.35, 0.623, 0.30, 0.040, fill = fig$blue,
               border = fig$blue_line, lwd = 1.1, radius = 1.5)
-  text_at(paste0(fmt("n_screen_bonf"), " Bonferroni-significant forward candidates"),
-          0.53, 0.623, size = 6.9, face = "bold", colour = fig$navy)
+  text_at(paste0(fmt("n_screen_bonf"), " forward-selected traits"),
+          0.35, 0.630, size = 6.25, face = "bold", colour = fig$navy)
+  text_at("Primary forward screen only",
+          0.35, 0.614, size = 5.5, colour = fig$slate)
+
+  rounded_box(0.72, 0.623, 0.30, 0.040, fill = fig$violet,
+              border = fig$violet_line, lwd = 1.1, radius = 1.5)
+  text_at("Reverse MR for 15 forward-selected traits",
+          0.72, 0.630, size = 5.55, face = "bold", colour = fig$navy)
+  text_at("Both complete 249-trait screens",
+          0.72, 0.614, size = 5.5, colour = fig$slate)
+
+  # Reverse MR informs only the directional assessment. Its path is routed to
+  # the right of the forward-candidate branch so the connectors do not cross.
+  reverse_path_x <- c(0.72, 0.72, 0.90, 0.90)
+  reverse_path_y <- c(0.603, 0.548, 0.548, 0.515)
+  grid.lines(
+    x = reverse_path_x, y = reverse_path_y,
+    gp = gpar(col = fig$white, lwd = 3.6)
+  )
+  grid.lines(
+    x = reverse_path_x, y = reverse_path_y,
+    gp = gpar(col = fig$violet_line, lwd = 1.25),
+    arrow = arrow(type = "closed", length = unit(1.7, "mm"))
+  )
 
   evaluation_card(
     0.205, "Robustness and sensitivity",
@@ -272,19 +306,21 @@ draw_figure1 <- function() {
            fmt("pgc_nb_controls"), " controls\nSame 15 summarized; full screen reported")
   )
   evaluation_card(
-    0.53, "Directionality",
-    c("Same 15 forward candidates", "Steiger assessment at three prevalences",
-      "Candidate-linked reverse-MR comparison", "Corresponding results from the two",
-      "complete 249-trait reverse screens"),
-    fig$violet, fig$violet_line
-  )
-  evaluation_card(
-    0.855, "Locus evidence",
+    0.53, "Locus evidence",
     c("Same 15 forward candidates", "Analysis-window construction",
       "ABF colocalization in both PGC outcomes", "Regional direction checks",
       "MHC and complex-region assessment"),
     fig$peach, fig$peach_line,
     paste0(fmt("coloc_records"), " trait-specific\nanalysis-window records")
+  )
+  evaluation_card(
+    0.855, "Directional evidence assessment",
+    c("15 forward-selected traits",
+      "Steiger directionality test",
+      "under three MDD prevalence assumptions",
+      "Matched reverse-MR estimates",
+      "from both complete 249-trait screens"),
+    fig$violet, fig$violet_line
   )
 
   rounded_box(0.53, 0.205, 0.77, 0.105, fill = fig$white,
@@ -332,35 +368,38 @@ draw_figure1 <- function() {
 
 mermaid <- c(
   "flowchart TB",
-  paste0("  E[\"Exposure GWAS<br/>", fmt("n_traits_metabolites"), " NMR-derived circulating metabolic traits<br/>N = ", fmt("tambets_meta_eur"), "; Estonian Biobank and UK Biobank\"]"),
-  paste0("  O[\"Primary depression outcome GWAS<br/>PGC major depression: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls\"]"),
-  paste0("  N[\"UK Biobank-excluded PGC sensitivity outcome<br/>", fmt("pgc_nb_cases"), " cases / ", fmt("pgc_nb_controls"), " controls\"]"),
-  "  FW[\"Primary forward MR screen<br/>All 249 metabolic traits as exposures\"]",
-  "  RV[\"Separate reverse-MR screens<br/>All 249 metabolic traits as outcomes; two PGC instrument sets<br/>Corresponding candidate subset used for directionality\"]",
-  paste0("  C[\"", fmt("n_screen_bonf"), " Bonferroni-significant forward candidates\"]"),
+  paste0("  E[\"Circulating metabolic-trait GWAS<br/>", fmt("n_traits_metabolites"), " NMR-derived circulating metabolic traits<br/>N = ", fmt("tambets_meta_eur"), "; Estonian Biobank and UK Biobank\"]"),
+  paste0("  O[\"PGC major-depression GWAS<br/>Primary: ", fmt("pgc_main_cases"), " cases / ", fmt("pgc_main_controls"), " controls<br/>UK Biobank-excluded: ", fmt("pgc_nb_cases"), " cases / ", fmt("pgc_nb_controls"), " controls\"]"),
+  "  FW[\"Forward MR<br/>249 metabolic traits as exposures; PGC major depression as outcome<br/>Primary and UK Biobank-excluded screens\"]",
+  "  RV[\"Reverse MR<br/>Genetic liability to MDD as exposure; 249 metabolic traits as outcomes<br/>Primary and UK Biobank-excluded screens\"]",
+  paste0("  C[\"", fmt("n_screen_bonf"), " forward-selected traits<br/>Primary forward screen only\"]"),
+  "  RM[\"Reverse MR for 15 forward-selected traits<br/>Both complete 249-trait screens\"]",
   "  R[\"Robustness and sensitivity<br/>Same 15 forward candidates; five estimators; Cochran's Q, MR-Egger and MR-PRESSO<br/>UK Biobank-excluded sensitivity; regional and shared-instrument exclusions\"]",
-  "  D[\"Directionality<br/>Steiger assessment; candidate-linked results from both complete 249-trait reverse-MR screens\"]",
   paste0("  L[\"Locus evidence<br/>Same 15 forward candidates; ABF colocalization and regional direction checks<br/>MHC and complex-region assessment; ", fmt("coloc_records"), " trait-specific analysis-window records\"]"),
+  "  D[\"Directional evidence assessment<br/>15 forward-selected traits; Steiger directionality test at three MDD prevalences<br/>Matched reverse-MR estimates from both complete 249-trait screens\"]",
   paste0("  G[\"Integrated evidence assessment<br/>", fmt("groups_priority"), " priority-reporting / ", fmt("groups_secondary"), " secondary-reporting traits<br/>", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"), " met the composite criterion\"]"),
   paste0("  F[\"Separate FinnGen R13 alternative-outcome comparison<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant; reporting groups unchanged<br/>Not an independent replication\"]"),
   "  E --> FW",
   "  O --> FW",
+  "  E --> RV",
   "  O --> RV",
-  "  N --> RV",
-  "  N --> R",
   "  FW --> C",
+  "  RV --> RM",
   "  C --> R",
-  "  C --> D",
   "  C --> L",
+  "  C --> D",
+  "  RM --> D",
   "  R --> G",
-  "  D --> G",
   "  L --> G",
+  "  D --> G",
   "  G -.-> F"
 )
 stopifnot(
-  all(c("  FW --> C", "  C --> R", "  C --> D", "  C --> L",
-        "  R --> G", "  D --> G", "  L --> G", "  G -.-> F") %in% mermaid),
-  !any(c("  RV --> R", "  RV --> D", "  RV --> L", "  F --> G") %in% mermaid)
+  all(c("  E --> FW", "  O --> FW", "  E --> RV", "  O --> RV",
+        "  FW --> C", "  RV --> RM", "  C --> R", "  C --> L",
+        "  C --> D", "  RM --> D", "  R --> G", "  L --> G",
+        "  D --> G", "  G -.-> F") %in% mermaid),
+  !any(c("  RV --> C", "  RM --> R", "  RM --> L", "  F --> G") %in% mermaid)
 )
 writeBin(
   charToRaw(paste0(paste(mermaid, collapse = "\n"), "\n")),

@@ -1,6 +1,14 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10 and v0.2.11 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.12 local verification (2026-09-09)
+
+- Figure 1 now uses neutral labels for the two GWAS inputs and shows forward and reverse MR as parallel direction-specific analyses with separately selected instruments.
+- Only the primary forward screen selects the 15-trait candidate set. All 15 candidates enter parallel robustness, locus and directional assessments; matched reverse-MR estimates from the two complete 249-trait screens enter only the directional branch.
+- The locus branch is centred and the directional branch is right-aligned. The rendered connectors do not cross, and the topology does not depict reverse MR as validation or proof of reciprocal causality.
+- The 9/6 reporting-group counts, 6,434-record locus assessment, 101 records with shared-variant posterior support, 0/101 composite result and separate FinnGen comparison are unchanged.
+- Local repository audit, R parsing, deterministic figure generation, colocalization-classification replay and the synthetic MR/colocalization smoke test passed. Clean-environment verification is recorded by GitHub Actions for the release commit.
 
 ## v0.2.11 local verification (2026-09-09)
 

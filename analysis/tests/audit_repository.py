@@ -101,33 +101,73 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.11" not in description or "version: 0.2.11" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.11")
+if "Version: 0.2.12" not in description or "version: 0.2.12" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.12")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
+workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
+verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
+if ("Version 0.2.12" not in readme or
+        "Release v0.2.12" not in workflow or
+        "## v0.2.12 local verification" not in verification):
+    errors.append("release-candidate version is not synchronized across repository documentation")
+mermaid_start = figure_script.find("mermaid <- c(")
+mermaid_end = figure_script.find("\n)\nstopifnot(", mermaid_start)
+if mermaid_start < 0 or mermaid_end < 0:
+    errors.append("Figure 1 Mermaid source block is missing")
+    mermaid_block = ""
+else:
+    mermaid_block = figure_script[mermaid_start:mermaid_end]
 for phrase in (
-    "Primary forward MR screen",
-    "Separate reverse-MR screens",
-    "Bonferroni-significant forward candidates",
+    "Circulating metabolic-trait GWAS",
+    "PGC major-depression GWAS",
+    "Parallel direction-specific MR analyses",
+    "Exposure-specific instruments selected separately in each direction",
+    "15 forward-selected traits",
+    "Primary forward screen only",
+    "Reverse MR for 15 forward-selected traits",
+    "Both complete 249-trait screens",
     "Same 15 forward candidates",
-    "complete 249-trait reverse screens",
     "Cochran's Q, MR-Egger and MR-PRESSO",
     "trait-specific analysis-window records",
     "reporting groups unchanged",
+    '0.53, "Locus evidence"',
+    '0.855, "Directional evidence assessment"',
+    "connector(0.205, 0.530, 0.760, 0.530, end = FALSE)",
+    "reverse_path_x <- c(0.72, 0.72, 0.90, 0.90)",
+    "reverse_path_y <- c(0.603, 0.548, 0.548, 0.515)",
     'G[\\"Integrated evidence assessment<br/>',
-    '"  FW --> C"',
-    '"  C --> L"',
-    "Corresponding candidate subset used for directionality",
 ):
     if phrase not in figure_script:
-        errors.append(f"Figure 1 is missing a required scope or topology marker: {phrase}")
+        errors.append(f"Figure 1 is missing a required scope marker: {phrase}")
+for edge in (
+    '"  E --> FW"',
+    '"  O --> FW"',
+    '"  E --> RV"',
+    '"  O --> RV"',
+    '"  FW --> C"',
+    '"  RV --> RM"',
+    '"  C --> R"',
+    '"  C --> L"',
+    '"  C --> D"',
+    '"  RM --> D"',
+    '"  R --> G"',
+    '"  L --> G"',
+    '"  D --> G"',
+    '"  G -.-> F"',
+):
+    if edge not in mermaid_block:
+        errors.append(f"Figure 1 is missing a required topology edge: {edge}")
 if any(
     phrase in figure_script
     for phrase in ("Pre-FinnGen evidence synthesis", "Groups defined before FinnGen")
 ):
     errors.append("Figure 1 must use neutral evidence-synthesis wording")
+for forbidden_edge in ('"  RV --> C"', '"  RM --> R"', '"  RM --> L"', '"  F --> G"'):
+    if forbidden_edge in mermaid_block:
+        errors.append(f"Figure 1 contains a forbidden topology edge: {forbidden_edge}")
 if "stage_label" in figure_script or "grid.circle" in figure_script:
     errors.append("Figure 1 must use unnumbered stage headings without circular badges")
 attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-07 for the exact current release schemas and publication boundary stated in this file."

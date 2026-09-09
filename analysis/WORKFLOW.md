@@ -2,6 +2,8 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
+Release v0.2.12 changes only the Figure 1 reporting layer. The workflow diagram now shows forward and reverse MR as parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+
 ## 1. Environment and local-only data
 
 Install R 4.5.1, PLINK 1.9 and bcftools 1.24. Restore the complete hard-dependency closure recorded in `renv.lock`; the GitHub packages are pinned to immutable commits. `analysis/environment/package-versions.tsv` records the principal analysis packages and command-line tools. Create `data-local/`; this directory is excluded by `.gitignore`.
