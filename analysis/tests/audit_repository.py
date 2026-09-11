@@ -110,9 +110,9 @@ verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
 if ("Version 0.2.13" not in readme or
-        "Release candidate v0.2.13" not in workflow or
-        "## v0.2.13 local verification" not in verification):
-    errors.append("release-candidate version is not synchronized across repository documentation")
+        "Release v0.2.13" not in workflow or
+        "## v0.2.13 release verification" not in verification):
+    errors.append("release version is not synchronized across repository documentation")
 for rel in (
     "DATA_SOURCES.md",
     "analysis/config/local_paths.example.tsv",

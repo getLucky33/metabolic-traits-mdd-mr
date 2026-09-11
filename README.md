@@ -2,7 +2,7 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.13 is a local release candidate that reorganizes the reproduction entry points without changing the frozen analyses or results.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.13 reorganizes the reproduction entry points without changing the frozen analyses or results.
 
 ## Choose a reproduction target
 
