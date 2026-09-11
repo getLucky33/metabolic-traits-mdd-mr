@@ -17,6 +17,8 @@ jobs:
           r-version: '4.5.1'
       - name: Check secrets, paths and restricted files
         run: python analysis/tests/audit_repository.py
+      - name: Test source preflight and manifest construction
+        run: python analysis/tests/test_prepare_inputs.py
       - name: Parse analysis R scripts
         shell: Rscript {0}
         run: |
@@ -24,7 +26,7 @@ jobs:
           invisible(lapply(files, parse))
           cat("PASS:", length(files), "R files parsed\n")
       - name: Compile Python analysis scripts
-        run: python -m py_compile analysis/scripts/*.py analysis/tests/*.py
+        run: python -m py_compile analysis/*.py analysis/scripts/*.py analysis/tests/*.py
       - name: Test reverse-extractor duplicate-key guards
         run: python analysis/tests/test_reverse_extractor.py
 

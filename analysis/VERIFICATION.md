@@ -1,6 +1,14 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. The v0.2.13 reproduction-entry candidate was checked locally on 2026-09-11. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.13 local verification (2026-09-11)
+
+- The README now starts with separate clean-clone, prepared-input and audit-only reproduction targets. It no longer presents figure generation as the implied entry point for every user.
+- `DATA_SOURCES.md` records the exact 249-accession exposure series, two PGC files, FinnGen endpoint, reference builds, required schemas and non-downloadable prepared-input requirements.
+- `metabolic_traits_249.tsv` maps the ordered GCST90451106–GCST90451354 range to 249 unique analysis identifiers and journal-facing display names (SHA-256 `4edabd80342a07dc0ab766f65d84d4cce6a1335a668ce10c77088a42021ea719`).
+- The dependency-free input preflight checks file uniqueness, source headers, the PLINK LD prefix, indexed dbSNP resource and 249 rsID maps. Its synthetic test verifies both preflight levels and the generated 249-row exposure/250-row source manifests.
+- The statistical code, released aggregate tables and figures are unchanged from v0.2.12. Local repository audit, Python compilation, R parsing, deterministic figure generation, the 6,434-row classification replay and synthetic MR/colocalization tests passed. Remote clean-checkout verification remains pending until this candidate is committed and GitHub Actions completes successfully.
 
 ## v0.2.12 local verification (2026-09-09)
 

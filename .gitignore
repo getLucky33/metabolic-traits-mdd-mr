@@ -7,6 +7,7 @@ results/figure_checksums.tsv
 data-local/
 results/analysis/
 analysis/manifests/*.local.tsv
+analysis/config/*.local.tsv
 __pycache__/
 *.pyc
 renv/library/

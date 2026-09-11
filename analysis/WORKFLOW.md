@@ -2,13 +2,21 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
-Release v0.2.12 changes only the Figure 1 reporting layer. The workflow diagram now shows forward and reverse MR as parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+Release candidate v0.2.13 adds an operational data checklist, the complete 249-accession map and fail-closed source/input preflight. It does not change the v0.2.12 analysis results or Figure 1 topology. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+
+## 0. Establish the reproduction boundary
+
+Read `DATA_SOURCES.md`, copy `analysis/config/local_paths.example.tsv` to an ignored `.local.tsv` file and run `analysis/prepare_inputs.py check --level sources`. This checks all 249 accession files, the two PGC outcomes, FinnGen, the PLINK LD prefix and the indexed dbSNP resource without reading the complete GWAS bodies.
+
+The downloaded files are not yet analysis-ready. Instrument selection also requires one prepared `variant_id`-to-rsID map per metabolic trait. After those maps exist, run the `analysis` check and build the complete local manifests. The current repository consumes and validates the maps but does not regenerate the complete frozen mapping set.
+
+Do not describe the integrated-evidence or exploratory SuSiE tables as independently executable outputs. They remain released aggregate audit records because the necessary regional association data, LD matrices and credible-set inputs are not public.
 
 ## 1. Environment and local-only data
 
 Install R 4.5.1, PLINK 1.9 and bcftools 1.24. Restore the complete hard-dependency closure recorded in `renv.lock`; the GitHub packages are pinned to immutable commits. `analysis/environment/package-versions.tsv` records the principal analysis packages and command-line tools. Create `data-local/`; this directory is excluded by `.gitignore`.
 
-Copy the examples in `analysis/manifests/` and replace their placeholder paths. Keep trait identifiers stable across all manifests. Full journal-facing names are used only in tables and figures; analysis identifiers must not be renamed after the run is frozen.
+Use `analysis/prepare_inputs.py build-manifests` to create the complete local source and exposure manifests after the analysis-level preflight passes. Build the IV manifest from stage 1 outputs, and copy only the remaining outcome, locus and reverse-tier examples when those stages are reached. Keep trait identifiers stable across all manifests. Full journal-facing names are used only in tables and figures; analysis identifiers must not be renamed after the run is frozen.
 
 ## 2. Instrument selection
 

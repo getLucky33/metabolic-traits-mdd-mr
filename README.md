@@ -2,15 +2,45 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.13 is a local release candidate that reorganizes the reproduction entry points without changing the frozen analyses or results.
 
-Version 0.2.12 has three reproducibility layers:
+## Choose a reproduction target
 
-1. `scripts/make_figures.R` regenerates Figures 1–4 from the released aggregate tables.
-2. Released aggregate inputs replay the complete 249-trait four-level screens and the 6,434-row colocalization classification, with fixed count assertions.
-3. `analysis/` contains prepared-input code for instrument selection, forward and reverse Mendelian randomization (MR), sensitivity analyses, FinnGen cross-outcome comparison, locus-window construction, and ABF colocalization. These stages require the original third-party GWAS and reference files described in `data/ACCESS.md`; those files are not duplicated here.
+| Target | What can be reproduced | Additional inputs |
+| --- | --- | --- |
+| Clean-clone verification | Figures 1–4, the complete 249-trait screen counts, the frozen 6,434-record colocalization classification and synthetic method checks | None beyond the recorded software environment |
+| Prepared-input analysis | Instrument selection, forward and reverse MR, sensitivity analyses, the FinnGen alternative-outcome comparison, locus construction, ABF colocalization and classification | Third-party GWAS, LD and dbSNP resources plus the prepared inputs listed in [`DATA_SOURCES.md`](DATA_SOURCES.md) |
+| Aggregate-result audit only | The 101-row integrated-evidence table and exploratory SuSiE status, binding and stopping summaries | Independent recomputation is not possible from the released files alone |
 
-## What can be run from a clean clone
+This is not a one-command raw-data-to-paper repository. Downloading the public GWAS files alone is insufficient: the prepared-input stages also require dbSNP-derived rsID maps, selected MDD instruments, coordinate tables and regional inputs. The exact boundary is stated before the commands so that a successful figure build is not mistaken for a complete numerical rerun.
+
+## Start here for a real-data rerun
+
+1. Read [`DATA_SOURCES.md`](DATA_SOURCES.md) for exact accessions, filenames, genome builds, required columns and prepared-input dependencies.
+2. Copy the local-path template and replace its paths. Files ending in `.local.tsv` are ignored by Git.
+3. Run the source preflight before starting any long analysis.
+
+```bash
+cp analysis/config/local_paths.example.tsv analysis/config/local_paths.local.tsv
+python analysis/prepare_inputs.py check \
+  --config analysis/config/local_paths.local.tsv \
+  --level sources
+```
+
+After preparing all 249 dbSNP-derived rsID maps, validate the analysis-ready inputs and build the complete local manifests:
+
+```bash
+python analysis/prepare_inputs.py check \
+  --config analysis/config/local_paths.local.tsv \
+  --level analysis
+python analysis/prepare_inputs.py build-manifests \
+  --config analysis/config/local_paths.local.tsv \
+  --out-dir analysis/manifests
+```
+
+Then follow [`analysis/WORKFLOW.md`](analysis/WORKFLOW.md). The workflow retains explicit one-trait and one-locus smoke-test stops; a single unattended runner is intentionally not provided because it would bypass those run-time and scientific checks.
+
+## Clean-clone verification
 
 Install R 4.5.1 and restore the complete environment recorded in `renv.lock`. `analysis/environment/package-versions.tsv` is a concise runtime summary, not a substitute for the lockfile.
 
@@ -29,11 +59,11 @@ Rscript analysis/tests/smoke_test.R
 
 Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact Figure 2 plotting values, Figure 3 matrix values, Figure 4 classification-to-disposition counts and a checksum file beside the figures. Figure 1 uses neutral GWAS-source headings and presents forward and reverse MR as parallel direction-specific analyses with separately selected instruments. Only the primary forward screen selects the 15-trait candidate set; those candidates enter the robustness, locus and directional assessments, whereas matched reverse-MR results enter only the directional assessment. The layout does not treat reverse MR as validation or proof of reciprocal causality. Figure 2 includes the primary PGC result, the PGC sensitivity analysis excluding UK Biobank and the FinnGen R13 alternative outcome for each candidate. Figure 4 recomputes the five ABF classifications across 6,434 analysis-window records and the disposition of the 101-record integrated-review subset from the released aggregate tables.
 
-On each push or pull request, the configured GitHub Actions workflow runs figure reproduction, code parsing, a secret/path scan and the synthetic analysis smoke test in a clean Linux environment.
+On each push or pull request, the configured GitHub Actions workflow runs the repository audit, the synthetic input-preflight test, figure reproduction, code parsing, a secret/path scan and the synthetic MR/colocalization smoke test in a clean Linux environment. It does not download or analyse the third-party GWAS files.
 
-## Upstream analysis pipeline
+## Prepared-input analysis coverage
 
-After obtaining the third-party data and a 1000 Genomes phase 3 European LD reference, copy the example manifests in `analysis/manifests/`, replace only their paths and follow `analysis/WORKFLOW.md`.
+The complete accession-to-trait mapping is released in `analysis/manifests/metabolic_traits_249.tsv`. Local source and exposure manifests can be built with `analysis/prepare_inputs.py` after the input checks pass.
 
 The released code covers:
 
@@ -59,7 +89,7 @@ The released Steiger code uses `599,249`, the maximum exposure meta-analysis sam
 
 ## Reproducibility boundary
 
-The public repository does not include original GWAS rows, individual-level records, LD panels, dbSNP VCF/BCF files, regional SNP extracts, credentials or unpublished review material. A clean clone therefore reproduces the figures, screen/count checks, the frozen ABF classification layer and synthetic method checks. It does not reproduce the complete MR, ABF, integrated-evidence or SuSiE computations without prepared upstream data and LD inputs.
+The public repository does not include original GWAS rows, individual-level records, LD panels, dbSNP VCF/BCF files, regional SNP extracts, credentials or unpublished review material. A clean clone therefore reproduces the figures, screen/count checks, the frozen ABF classification layer and synthetic method checks. With the listed third-party data and all documented prepared inputs, the public scripts cover the main MR, FinnGen, locus and ABF-classification stages. Integrated-evidence and SuSiE computations remain audit-only because their regional data, LD matrices and credible-set inputs are not redistributed.
 
 Released audit tables include:
 

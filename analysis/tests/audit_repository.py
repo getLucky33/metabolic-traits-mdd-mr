@@ -101,18 +101,48 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.12" not in description or "version: 0.2.12" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.12")
+if "Version: 0.2.13" not in description or "version: 0.2.13" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.13")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
 verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if ("Version 0.2.12" not in readme or
-        "Release v0.2.12" not in workflow or
-        "## v0.2.12 local verification" not in verification):
+if ("Version 0.2.13" not in readme or
+        "Release candidate v0.2.13" not in workflow or
+        "## v0.2.13 local verification" not in verification):
     errors.append("release-candidate version is not synchronized across repository documentation")
+for rel in (
+    "DATA_SOURCES.md",
+    "analysis/config/local_paths.example.tsv",
+    "analysis/manifests/metabolic_traits_249.tsv",
+    "analysis/prepare_inputs.py",
+):
+    if not (ROOT / rel).is_file():
+        errors.append(f"reproduction-entry file is missing: {rel}")
+catalog_file = ROOT / "analysis" / "manifests" / "metabolic_traits_249.tsv"
+if catalog_file.is_file():
+    if hashlib.sha256(catalog_file.read_bytes()).hexdigest() != "4edabd80342a07dc0ab766f65d84d4cce6a1335a668ce10c77088a42021ea719":
+        errors.append("metabolic accession-to-trait mapping differs from the verified v0.2.13 catalog")
+    with catalog_file.open(encoding="utf-8", newline="") as handle:
+        catalog = list(csv.DictReader(handle, delimiter="\t"))
+    expected_accessions = [f"GCST{number}" for number in range(90451106, 90451355)]
+    labels = {row["trait_id"]: row["trait_display"] for row in read_tsv("trait_display_dictionary.tsv")}
+    if (len(catalog) != 249 or [row.get("accession") for row in catalog] != expected_accessions or
+            len({row.get("trait") for row in catalog}) != 249 or
+            any(row.get("genome_build") != "GRCh38" or row.get("sample_size") != "599249" for row in catalog)):
+        errors.append("metabolic accession catalog must preserve the ordered 249-trait meta_EUR series")
+    if {row.get("trait"): row.get("trait_display") for row in catalog} != labels:
+        errors.append("metabolic accession catalog must match the frozen trait/display dictionary")
+for marker in (
+    "Choose a reproduction target",
+    "Start here for a real-data rerun",
+    "Downloading the public GWAS files alone is insufficient",
+    "Aggregate-result audit only",
+):
+    if marker not in readme:
+        errors.append(f"README is missing a reproduction-boundary marker: {marker}")
 mermaid_start = figure_script.find("mermaid <- c(")
 mermaid_end = figure_script.find("\n)\nstopifnot(", mermaid_start)
 if mermaid_start < 0 or mermaid_end < 0:

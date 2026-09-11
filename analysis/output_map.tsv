@@ -1,4 +1,5 @@
 stage	principal_outputs	manuscript_or_figure_use
+prepare_inputs.py	source_manifest.local.tsv; exposure_manifest.local.tsv	Fail-closed verification of the 249 source series and construction of complete local manifests; no scientific result is generated
 01_select_instruments.R	*_final_ivs.tsv; instrument_selection_qc.tsv	Instrument counts and strength/LD coverage audit
 02_harmonise_forward.R	harmonised_main_*.rds; harmonised_noukbb_*.rds; action-3 RDS; harmonisation_qc.tsv	Forward-MR inputs and allele-harmonisation audit
 03_run_forward_mr.R	mr_main_summary.tsv; mr_main_summary_screen.tsv; mr_main_long.tsv; mr_sensitivity.tsv; mr_noukbb_summary.tsv; mr_a3_summary.tsv; mr_leaveoneout.tsv	Primary MR estimates; locked 249-trait screen; Figure 2; sensitivity tables

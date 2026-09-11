@@ -1,6 +1,6 @@
 # Data access and redistribution boundary
 
-The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value; it contains no variant-level fields. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. The provider terms and current release schemas were checked on 2026-09-07. Zhouyi Wang confirmed the responsible-author attestation below for the release schemas and publication boundary.
+The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value; it contains no variant-level fields. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. The provider terms and current release schemas were checked on 2026-09-07. Zhouyi Wang confirmed the responsible-author attestation below for the release schemas and publication boundary. Operational download and prepared-input requirements are listed in [`DATA_SOURCES.md`](../DATA_SOURCES.md).
 
 ## Verification status (checked 2026-09-07)
 

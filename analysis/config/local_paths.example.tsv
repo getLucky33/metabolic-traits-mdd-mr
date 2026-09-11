@@ -1,0 +1,12 @@
+key	path
+catalog	analysis/manifests/metabolic_traits_249.tsv
+metabolic_download_dir	data-local/metabolite
+rsid_map_dir	data-local/maps
+pgc_main	data-local/mdd/daner_pgc_mdd_no23andMe_eur_hg19_v3.49.24.11.neff.gz
+pgc_noukbb	data-local/mdd/daner_pgc_mdd_no23andMe-noUKBB_eur_hg19_v3.49.24.11.neff.gz
+finngen	data-local/finngen/finngen_R13_F5_DEPRESSIO.gz
+ld_bfile	data-local/ld/1kg.v3/EUR
+plink	data-local/bin/plink
+bcftools	data-local/bin/bcftools
+dbsnp	data-local/dbsnp/GCF_000001405.40.gz
+dbsnp_index	data-local/dbsnp/GCF_000001405.40.gz.tbi
