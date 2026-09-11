@@ -1,6 +1,13 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Version 0.2.13 was checked locally and in a clean GitHub Actions environment on 2026-09-11. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Version 0.2.13 was checked locally and in a clean GitHub Actions environment on 2026-09-11. Version 0.2.14 retains the same frozen analyses and updates the deterministic reporting layer. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.14 release verification (2026-09-11)
+
+- Figure 2 adds a 249-row primary forward-screen panel and retains the 45 exact candidate estimates from the primary PGC, UK Biobank-excluded PGC and FinnGen sources.
+- Figure 3 retains all 180 evidence cells and groups them into six analytical domains without changing their values.
+- Figure 4 retains the five-class 6,434-record totals and 101-record integrated subset, adds the 30 trait-by-class counts, and reports the four mutually exclusive integrated dispositions and 0/101 endpoint.
+- The plotting script validates every new display value against the released aggregate tables before rendering. Local and clean-checkout verification are required for the release commit.
 
 ## v0.2.13 release verification (2026-09-11)
 

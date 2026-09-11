@@ -101,17 +101,17 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.13" not in description or "version: 0.2.13" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.13")
+if "Version: 0.2.14" not in description or "version: 0.2.14" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.14")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
 verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if ("Version 0.2.13" not in readme or
-        "Release v0.2.13" not in workflow or
-        "## v0.2.13 release verification" not in verification):
+if ("Version 0.2.14" not in readme or
+        "Release v0.2.14" not in workflow or
+        "## v0.2.14 release verification" not in verification):
     errors.append("release version is not synchronized across repository documentation")
 for rel in (
     "DATA_SOURCES.md",
@@ -124,7 +124,7 @@ for rel in (
 catalog_file = ROOT / "analysis" / "manifests" / "metabolic_traits_249.tsv"
 if catalog_file.is_file():
     if hashlib.sha256(catalog_file.read_bytes()).hexdigest() != "4edabd80342a07dc0ab766f65d84d4cce6a1335a668ce10c77088a42021ea719":
-        errors.append("metabolic accession-to-trait mapping differs from the verified v0.2.13 catalog")
+        errors.append("metabolic accession-to-trait mapping differs from the verified v0.2.14 catalog")
     with catalog_file.open(encoding="utf-8", newline="") as handle:
         catalog = list(csv.DictReader(handle, delimiter="\t"))
     expected_accessions = [f"GCST{number}" for number in range(90451106, 90451355)]

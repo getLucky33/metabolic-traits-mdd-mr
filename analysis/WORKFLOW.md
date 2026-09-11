@@ -2,7 +2,7 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
-Release v0.2.13 adds an operational data checklist, the complete 249-accession map and fail-closed source/input preflight. It does not change the v0.2.12 analysis results or Figure 1 topology. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+Release v0.2.14 retains the frozen analysis results and updates the reporting layer. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role; and Figure 4 adds the per-trait distribution of the 101 shared-variant-support records and their four integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
 
 ## 0. Establish the reproduction boundary
 

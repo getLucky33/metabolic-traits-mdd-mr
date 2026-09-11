@@ -43,11 +43,14 @@ jobs:
       - name: Confirm figure source tables and checksums
         run: |
           test -s results/figures/Figure_2_plot_data.tsv
+          test -s results/figures/Figure_2_screen_data.tsv
           test -s results/figures/Figure_3_matrix_data.tsv
           test -s results/figures/Figure_4_plot_data.tsv
           test -s results/figures/figure_checksums.tsv
           test "$(tail -n +2 results/figures/Figure_2_plot_data.tsv | wc -l)" -eq 45
-          test "$(tail -n +2 results/figures/Figure_4_plot_data.tsv | wc -l)" -eq 12
+          test "$(tail -n +2 results/figures/Figure_2_screen_data.tsv | wc -l)" -eq 249
+          test "$(tail -n +2 results/figures/Figure_3_matrix_data.tsv | wc -l)" -eq 180
+          test "$(tail -n +2 results/figures/Figure_4_plot_data.tsv | wc -l)" -eq 40
       - name: Confirm released aggregate inputs were not rewritten
         run: git diff --exit-code -- data/derived
 

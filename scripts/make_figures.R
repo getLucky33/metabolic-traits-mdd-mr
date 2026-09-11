@@ -72,11 +72,17 @@ fmt <- function(id) format(sotv(id), big.mark = ",", scientific = FALSE, trim = 
 
 t2 <- fread(file.path(DATA, "evidence_summary.tsv"))
 dictionary <- fread(file.path(DATA, "trait_labels.tsv"))
+full_dictionary <- fread(file.path(DATA, "trait_display_dictionary.tsv"))
 if (nrow(dictionary) != 15L || uniqueN(dictionary$trait_id) != 15L ||
     uniqueN(dictionary$trait_display) != 15L || any(grepl("_", dictionary$trait_display, fixed = TRUE))) {
   stop("Trait display dictionary failed integrity checks")
 }
+if (nrow(full_dictionary) != 249L || uniqueN(full_dictionary$trait_id) != 249L ||
+    uniqueN(full_dictionary$trait_display) != 249L || any(grepl("_", full_dictionary$trait_display, fixed = TRUE))) {
+  stop("The full trait display dictionary failed integrity checks")
+}
 setkey(dictionary, trait_id)
+setkey(full_dictionary, trait_id)
 display_name <- function(x) {
   out <- dictionary[J(x), trait_display]
   if (anyNA(out)) stop("Missing display name for: ", paste(x[is.na(out)], collapse = ", "))
@@ -413,7 +419,7 @@ draw_figure1(); dev.off()
 svg(file.path(OUT, "Figure_1.svg"), width = 7.2, height = 9.4, family = FONT, bg = "white")
 draw_figure1(); dev.off()
 
-# Figure 2: three-series forest plot on the interpretable odds-ratio scale.
+# Figure 2: full-screen overview followed by three-series candidate estimates.
 forest <- fread(file.path(DATA, "forest_estimates.tsv"))
 forest <- forest[match(t2$trait, trait)]
 stopifnot(identical(forest$trait, t2$trait), !anyNA(forest$b_pgc), !anyNA(forest$b_fg))
@@ -470,6 +476,64 @@ fwrite(
          dataset, n_iv, beta, se, p_value, estimate, lower, upper)],
   file.path(OUT, "Figure_2_plot_data.tsv"), sep = "\t", eol = "\n"
 )
+
+screen_level_order <- c("bonferroni_hit", "fdr_only", "nominal", "null")
+screen_level_labels <- c(
+  bonferroni_hit = "Bonferroni-significant (15)",
+  fdr_only = "FDR-only (53)",
+  nominal = "Nominal only (35)",
+  null = "No nominal association (146)"
+)
+screen_level_colours <- c(
+  bonferroni_hit = COL$navy,
+  fdr_only = COL$teal,
+  nominal = COL$orange,
+  null = "#B8C1C7"
+)
+screen_level_shapes <- c(bonferroni_hit = 16, fdr_only = 17, nominal = 15, null = 1)
+screen_plot <- copy(forward_screen)
+screen_plot[, trait_display := full_dictionary[J(trait), trait_display]]
+if (nrow(screen_plot) != 249L || uniqueN(screen_plot$trait) != 249L ||
+    anyNA(screen_plot$trait_display) ||
+    !identical(screen_plot[, .N, by = screen_level][match(screen_level_order, screen_level), N],
+               c(15L, 53L, 35L, 146L))) {
+  stop("Figure 2 full-screen source failed the 249-trait and significance-class checks")
+}
+screen_plot[, screen_level := factor(screen_level, levels = screen_level_order)]
+fwrite(
+  screen_plot[, .(
+    trait_id = trait, trait_display, n_iv, beta = ivw_b, se = ivw_se, p_value = ivw_p,
+    estimate = ivw_or, lower = ivw_or_lci, upper = ivw_or_uci,
+    p_fdr_bh, p_bonf, screen_level = as.character(screen_level)
+  )],
+  file.path(OUT, "Figure_2_screen_data.tsv"), sep = "\t", eol = "\n"
+)
+
+p2_overview <- ggplot(screen_plot, aes(ivw_b, -log10(ivw_p), colour = screen_level,
+                                       shape = screen_level)) +
+  geom_hline(yintercept = -log10(0.05), colour = "#AAB5BC", linewidth = 0.35,
+             linetype = 3) +
+  geom_hline(yintercept = -log10(0.05 / 249), colour = COL$navy, linewidth = 0.45,
+             linetype = 2) +
+  geom_vline(xintercept = 0, colour = "#AAB5BC", linewidth = 0.35) +
+  geom_point(size = 2.1, stroke = 0.55, alpha = 0.92) +
+  scale_colour_manual(values = screen_level_colours, labels = screen_level_labels,
+                      breaks = screen_level_order) +
+  scale_shape_manual(values = screen_level_shapes, labels = screen_level_labels,
+                     breaks = screen_level_order) +
+  scale_x_continuous(breaks = seq(-0.08, 0.08, 0.04)) +
+  labs(
+    tag = "a",
+    x = "Primary PGC log odds ratio per genetically predicted 1-SD increase",
+    y = expression(-log[10](italic(P))),
+    subtitle = "All 249 circulating metabolic traits; dashed line indicates P = 0.05/249"
+  ) +
+  theme_sr(9.5) +
+  theme(
+    legend.position = "top", legend.justification = "left",
+    legend.box = "horizontal", plot.subtitle = element_text(colour = COL$grey, size = 8.3)
+  )
+
 f2[, trait_display := factor(trait_display, levels = rev(t2$trait_figure_label))]
 dataset_levels <- c("PGC major depression", "PGC excluding UK Biobank", "FinnGen R13 depression")
 f2[, dataset := factor(dataset, levels = dataset_levels)]
@@ -485,7 +549,7 @@ p2_forest <- ggplot(f2, aes(estimate, trait_display, colour = dataset, shape = d
   scale_shape_manual(values = c(16, 15, 17), breaks = dataset_levels) +
   scale_x_log10(breaks = c(0.88, 0.92, 0.96, 1.00, 1.04, 1.08, 1.12),
                 limits = c(0.855, 1.155)) +
-  labs(x = "Odds ratio per genetically predicted 1-SD increase (95% CI)", y = NULL) +
+  labs(tag = "b", x = "Odds ratio per genetically predicted 1-SD increase (95% CI)", y = NULL) +
   theme_sr(9.3) +
   theme(legend.position = "top", legend.justification = "left",
         axis.text.y = element_text(size = 8.1), panel.spacing.y = unit(3, "mm"))
@@ -502,9 +566,12 @@ p2_values <- ggplot(f2, aes(0, trait_display, colour = dataset, group = dataset)
         strip.text = element_text(colour = NA), strip.background = element_rect(fill = NA, colour = NA),
         legend.position = "none", panel.spacing.y = unit(3, "mm"),
         plot.margin = margin(7, 24, 7, 7))
-p2 <- p2_forest + p2_values + plot_layout(widths = c(0.69, 0.31), guides = "collect") &
+p2_candidate <- p2_forest + p2_values + plot_layout(widths = c(0.69, 0.31), guides = "collect") &
   theme(legend.position = "top")
-save_gg(p2, "Figure_2", 13.0, 9.3)
+p2 <- p2_overview / p2_candidate +
+  plot_layout(heights = c(0.32, 0.68)) &
+  theme(plot.tag = element_text(family = FONT, face = "bold", size = 12))
+save_gg(p2, "Figure_2", 13.0, 12.0)
 
 # Figure 3: evidence matrix. Text carries each category; colour repeats it.
 rev_main <- fread(file.path(DATA, "reverse_mr_primary.tsv"))
@@ -549,10 +616,43 @@ matrix_wide <- data.table(
 )
 layer_order <- names(matrix_wide)[-1]
 m3 <- melt(matrix_wide, id.vars = "trait", variable.name = "layer", value.name = "value")
+m3[, domain := fcase(
+  layer %chin% c("Effect\nIVW dir.", "Effect\n5 methods"), "Association direction",
+  layer %chin% c("Robustness\nPalindromic exclusion", "Robustness\nUK Biobank excluded",
+                 "Robustness\nMR-PRESSO", "Sensitivity\nShared-IV removal"),
+    "Robustness and sensitivity",
+  layer %chin% c("Diagnostics\nEgger int.", "Diagnostics\nCochran Q"), "Diagnostics",
+  layer == "Direction\nReverse MR", "Directionality",
+  layer %chin% c("Alternative outcome\nFG direction", "Alternative outcome\nP level"),
+    "Alternative outcome",
+  layer == "Locus\nColoc", "Locus evidence"
+)]
+domain_order <- c(
+  "Association direction", "Robustness and sensitivity", "Diagnostics",
+  "Directionality", "Alternative outcome", "Locus evidence"
+)
+layer_labels <- c(
+  "Effect\nIVW dir." = "IVW\ndirection",
+  "Effect\n5 methods" = "Five-method\nagreement",
+  "Robustness\nPalindromic exclusion" = "Palindromic\nexclusion",
+  "Robustness\nUK Biobank excluded" = "UK Biobank\nexcluded",
+  "Robustness\nMR-PRESSO" = "MR-PRESSO",
+  "Sensitivity\nShared-IV removal" = "Shared-instrument\nremoval",
+  "Diagnostics\nEgger int." = "MR-Egger\nintercept",
+  "Diagnostics\nCochran Q" = "Cochran's Q",
+  "Direction\nReverse MR" = "Reverse MR",
+  "Alternative outcome\nFG direction" = "FinnGen\ndirection",
+  "Alternative outcome\nP level" = "FinnGen\nsignificance",
+  "Locus\nColoc" = "Colocalization"
+)
 m3[, trait_display := wrap_trait(figure_full_name(trait))]
-m3[, group_label := t2$group_label[match(trait, t2$trait)]]
+m3[, group_label := fifelse(
+  t2$reporting_group[match(trait, t2$trait)] == "priority_reporting",
+  "Priority group", "Secondary group"
+)]
 m3[, trait_display := factor(trait_display, levels = rev(t2$trait_figure_label))]
 m3[, layer := factor(layer, levels = layer_order)]
+m3[, domain := factor(domain, levels = domain_order)]
 m3[, state := fcase(
   value %chin% c("Yes", "5/5", "FDR", "R", "B/B"), "support",
   value %chin% c("Nom", "P", "B/F", "F/B"), "qualified",
@@ -567,6 +667,7 @@ fwrite(
     trait_display = figure_full_name(trait),
     reporting_group = t2$reporting_group[match(trait, t2$trait)],
     group_label,
+    domain = as.character(domain),
     layer = gsub("\n", " / ", as.character(layer), fixed = TRUE),
     value = as.character(value),
     state,
@@ -581,18 +682,24 @@ fwrite(
 p3 <- ggplot(m3, aes(layer, trait_display, fill = state, label = value)) +
   geom_tile(colour = "white", linewidth = 0.75) +
   geom_text(family = FONT, size = 2.75, colour = COL$ink) +
-  facet_grid(group_label ~ ., scales = "free_y", space = "free_y") +
+  facet_grid(group_label ~ domain, scales = "free", space = "free") +
   scale_fill_manual(values = c(support = "#DCEBDD", qualified = "#F6E8C9",
                                limitation = "#F2D7D5", positive = "#D9E8F2",
                                negative = "#E9E2F2", neutral = "#EDF0F2"), guide = "none") +
+  scale_x_discrete(labels = layer_labels) +
   labs(x = NULL, y = NULL) +
   theme_sr(8.6) +
-  theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 42, hjust = 1, vjust = 1),
-        axis.text.y = element_text(size = 7.7), panel.spacing.y = unit(3, "mm")) +
-  geom_vline(xintercept = c(2.5, 6.5, 8.5, 10.5), colour = "#AAB5BC", linewidth = 0.35)
-save_gg(p3, "Figure_3", 12.2, 8.5)
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 35, hjust = 1, vjust = 1, size = 7.5),
+    axis.text.y = element_text(size = 7.7),
+    panel.spacing = unit(1.5, "mm"),
+    strip.text.x = element_text(hjust = 0.5, size = 8.0),
+    strip.text.y = element_text(angle = 0, size = 7.8)
+  )
+save_gg(p3, "Figure_3", 13.0, 8.8)
 
-# Figure 4: colocalization classifications and the disposition of the 101-record subset.
+# Figure 4: aggregate, trait-level and integrated colocalization summaries.
 classification <- fread(file.path(DATA, "coloc_classification.tsv"))
 integrated <- fread(file.path(DATA, "integrated_mechanism_evidence.tsv"))
 if (nrow(classification) != 6434L || uniqueN(classification$locus_key) != 6434L) {
@@ -688,16 +795,48 @@ if (!identical(flow_observed, flow_expected)) {
   stop("The ABF-class to integrated-disposition cross-tabulation has changed")
 }
 
+support_classes <- c("robust_coloc", "prior_sensitive_coloc")
+trait_support <- data.table(
+  trait = rep(t2$trait, each = length(support_classes)),
+  abf_class = rep(support_classes, times = nrow(t2)),
+  n = 0L
+)
+trait_support[
+  classification[abf_class %chin% support_classes, .N, by = .(trait, abf_class)],
+  on = .(trait, abf_class), n := i.N
+]
+robust_by_trait <- trait_support[abf_class == "robust_coloc", n]
+prior_by_trait <- trait_support[abf_class == "prior_sensitive_coloc", n]
+if (!identical(robust_by_trait, as.integer(t2$coloc_n_robust)) ||
+    !identical(prior_by_trait, as.integer(t2$coloc_n_prior)) ||
+    sum(trait_support$n) != 101L) {
+  stop("Trait-level shared-variant-support counts do not match the released evidence summary")
+}
+trait_support[, `:=`(
+  trait_display = t2$trait_figure_label[match(trait, t2$trait)],
+  reporting_group = t2$reporting_group[match(trait, t2$trait)],
+  group_label = fifelse(
+    t2$reporting_group[match(trait, t2$trait)] == "priority_reporting",
+    "Priority group", "Secondary group"
+  )
+)]
+
 figure4_plot_data <- rbindlist(list(
   data.table(
     panel = "all_records", source = class_order, destination = NA_character_,
     n = as.integer(class_values), denominator = 6434L,
     percent = 100 * as.integer(class_values) / 6434
   ),
-  flow_expected[, .(
-    panel = "integrated_flow", source = abf_class, destination = evidence_tier,
-    n, denominator = 101L, percent = 100 * n / 101
+  trait_support[, .(
+    panel = "trait_support", source = trait, destination = abf_class,
+    n, denominator = 101L, percent = 100 * n / 101,
+    trait_display = figure_full_name(trait), reporting_group
   )],
+  data.table(
+    panel = "integrated_disposition", source = tier_order, destination = NA_character_,
+    n = as.integer(tier_values), denominator = 101L,
+    percent = 100 * as.integer(tier_values) / 101
+  ),
   data.table(
     panel = "composite_assessment", source = "mechanism_eligible",
     destination = NA_character_, n = 0L, denominator = 101L, percent = 0
@@ -706,224 +845,117 @@ figure4_plot_data <- rbindlist(list(
 fwrite(figure4_plot_data, file.path(OUT, "Figure_4_plot_data.tsv"), sep = "\t", eol = "\n")
 
 fmt_n <- function(x) format(x, big.mark = ",", scientific = FALSE, trim = TRUE)
-fmt_pct <- function(x) sprintf("%.2f%%", 100 * x)
 
-draw_ribbon <- function(x0, x1, lo0, hi0, lo1, hi1, colour) {
-  t <- seq(0, 1, length.out = 80L)
-  smooth <- 3 * t^2 - 2 * t^3
-  x <- x0 + (x1 - x0) * t
-  upper <- hi0 + (hi1 - hi0) * smooth
-  lower <- lo0 + (lo1 - lo0) * smooth
-  grid.polygon(
-    x = unit(c(x, rev(x)), "npc"), y = unit(c(upper, rev(lower)), "npc"),
-    gp = gpar(fill = adjustcolor(colour, alpha.f = 0.34),
-              col = adjustcolor(colour, alpha.f = 0.62), lwd = 0.6)
-  )
-}
-
-draw_node <- function(x0, x1, lo, hi, fill) {
-  grid.roundrect(
-    x = (x0 + x1) / 2, y = (lo + hi) / 2,
-    width = x1 - x0, height = hi - lo, r = unit(1.0, "mm"),
-    gp = gpar(fill = fill, col = COL$white, lwd = 0.9)
-  )
-}
-
-draw_figure4 <- function() {
-  grid.newpage()
-  grid.rect(gp = gpar(fill = COL$white, col = NA))
-
-  grid.text("a", x = 0.035, y = 0.965, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 12, fontface = "bold", col = COL$ink))
-  grid.text("ABF classifications across 6,434 trait-specific analysis-window records",
-            x = 0.057, y = 0.965, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 11.2, fontface = "bold", col = COL$ink))
-
-  bar_left <- 0.055
-  bar_width <- 0.89
-  bar_y <- 0.865
-  bar_height <- 0.050
-  cumulative <- 0
-  for (id in class_order) {
-    width <- bar_width * class_expected[[id]] / 6434
-    grid.rect(x = bar_left + cumulative + width / 2, y = bar_y, width = width,
-              height = bar_height,
-              gp = gpar(fill = class_colours[[id]], col = COL$white, lwd = 0.45))
-    cumulative <- cumulative + width
-  }
-  grid.rect(x = bar_left + bar_width / 2, y = bar_y, width = bar_width,
-            height = bar_height, gp = gpar(fill = NA, col = COL$navy, lwd = 0.7))
-
-  support_n <- class_expected[["robust_coloc"]] + class_expected[["prior_sensitive_coloc"]]
-  support_mid <- bar_left + bar_width * support_n / 6434 / 2
-  grid.lines(x = unit(c(support_mid, support_mid, 0.235), "npc"),
-             y = unit(c(bar_y + bar_height / 2, 0.922, 0.922), "npc"),
-             gp = gpar(col = COL$navy, lwd = 0.8))
-  grid.text(
-    paste0(fmt_n(support_n), " / 6,434 (", fmt_pct(support_n / 6434),
-           ") entered integrated review"),
-    x = 0.242, y = 0.922, just = "left",
-    gp = gpar(fontfamily = FONT, fontsize = 8.2, fontface = "bold", col = COL$navy)
+all_records_plot <- data.table(
+  abf_class = factor(class_order, levels = class_order),
+  n = as.integer(class_values)
+)
+all_records_legend <- setNames(
+  paste0(class_labels[class_order], " (", fmt_n(class_expected[class_order]), ")"),
+  class_order
+)
+p4a <- ggplot(all_records_plot, aes(n, "All records", fill = abf_class)) +
+  geom_col(width = 0.58, colour = COL$white, linewidth = 0.35,
+           position = position_stack(reverse = TRUE)) +
+  geom_text(
+    data = all_records_plot[n >= 500],
+    aes(label = fmt_n(n)), position = position_stack(vjust = 0.5, reverse = TRUE),
+    family = FONT, size = 2.8, colour = COL$white, fontface = "bold"
+  ) +
+  scale_fill_manual(values = class_colours, labels = all_records_legend, breaks = class_order) +
+  scale_x_continuous(labels = function(x) fmt_n(x), expand = expansion(mult = c(0, 0.015))) +
+  labs(
+    tag = "a",
+    title = "ABF classifications across 6,434 trait-specific analysis-window records",
+    subtitle = "The 101 robust or prior-sensitive records (1.57%) entered integrated review",
+    x = "Analysis-window records", y = NULL
+  ) +
+  theme_sr(9.2) +
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
+  theme(
+    legend.position = "bottom", legend.justification = "left",
+    legend.text = element_text(size = 7.5),
+    plot.subtitle = element_text(colour = COL$grey, size = 8.1),
+    axis.text.y = element_text(face = "bold")
   )
 
-  legend_item <- function(x, y, id) {
-    grid.rect(x = x, y = y, width = 0.012, height = 0.012,
-              gp = gpar(fill = class_colours[[id]], col = NA))
-    label <- paste0(class_labels[[id]], "  ", fmt_n(class_expected[[id]]),
-                    " (", fmt_pct(class_expected[[id]] / 6434), ")")
-    grid.text(label, x = x + 0.011, y = y, just = "left",
-              gp = gpar(fontfamily = FONT, fontsize = 7.6, col = COL$ink))
-  }
-  legend_item(0.060, 0.800, "robust_coloc")
-  legend_item(0.330, 0.800, "prior_sensitive_coloc")
-  legend_item(0.650, 0.800, "distinct_signal")
-  legend_item(0.060, 0.758, "trait_specific_or_low_power")
-  legend_item(0.520, 0.758, "inconclusive")
+trait_support[, abf_class := factor(abf_class, levels = support_classes)]
+trait_support[, trait_display := factor(trait_display, levels = rev(t2$trait_figure_label))]
+support_colours <- c(robust_coloc = class_colours[["robust_coloc"]],
+                     prior_sensitive_coloc = class_colours[["prior_sensitive_coloc"]])
+support_labels <- c(robust_coloc = "Robust ABF", prior_sensitive_coloc = "Prior-sensitive ABF")
+p4b <- ggplot(trait_support, aes(n, trait_display, fill = abf_class)) +
+  geom_col(width = 0.68, colour = COL$white, linewidth = 0.35,
+           position = position_stack(reverse = TRUE)) +
+  geom_text(
+    data = trait_support[n > 0], aes(label = n, colour = abf_class),
+    position = position_stack(vjust = 0.5, reverse = TRUE), family = FONT, size = 2.65,
+    fontface = "bold", show.legend = FALSE
+  ) +
+  facet_grid(group_label ~ ., scales = "free_y", space = "free_y") +
+  scale_fill_manual(values = support_colours, labels = support_labels, breaks = support_classes) +
+  scale_colour_manual(values = c(robust_coloc = COL$white, prior_sensitive_coloc = COL$ink)) +
+  scale_x_continuous(breaks = seq(0, 10, 2), limits = c(0, 10), expand = expansion(mult = c(0, 0.01))) +
+  labs(
+    tag = "b",
+    title = "Distribution of the 101 shared-variant-support records across the 15 traits",
+    x = "Records per trait", y = NULL
+  ) +
+  theme_sr(9.0) +
+  theme(
+    legend.position = "top", legend.justification = "left",
+    axis.text.y = element_text(size = 7.6), panel.spacing.y = unit(2.5, "mm")
+  )
 
-  grid.text("b", x = 0.035, y = 0.700, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 12, fontface = "bold", col = COL$ink))
-  grid.text("Integrated disposition of records with posterior support favoring H4",
-            x = 0.057, y = 0.700, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 11.2, fontface = "bold", col = COL$ink))
-  grid.text("The 101-record subset is magnified; ribbon widths are proportional within this panel.",
-            x = 0.057, y = 0.670, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 7.3, col = COL$grey))
-  grid.text("ABF classification", x = 0.262, y = 0.630,
-            gp = gpar(fontfamily = FONT, fontsize = 7.0, fontface = "bold", col = COL$grey))
-  grid.text("Integrated disposition", x = 0.708, y = 0.630,
-            gp = gpar(fontfamily = FONT, fontsize = 7.0, fontface = "bold", col = COL$grey))
+tier_labels <- c(
+  abf_label_only_complex_downgraded = "Complex-region downgraded",
+  abf_label_only_forward_unassessable = "Forward direction unassessable",
+  abf_prior_sensitive_forward_consistent = "Prior-sensitive and forward-consistent",
+  abf_label_only_forward_opposite = "Opposite forward direction"
+)
+disposition_plot <- data.table(
+  evidence_tier = factor(tier_order, levels = rev(tier_order)),
+  n = as.integer(tier_values)
+)
+p4c <- ggplot(disposition_plot, aes(n, evidence_tier, fill = evidence_tier)) +
+  geom_col(width = 0.62) +
+  geom_text(aes(label = n), hjust = -0.25, family = FONT, size = 3.0, fontface = "bold") +
+  scale_fill_manual(values = tier_colours, guide = "none") +
+  scale_y_discrete(labels = tier_labels) +
+  scale_x_continuous(limits = c(0, 62), expand = expansion(mult = c(0, 0))) +
+  labs(tag = "c", title = "Integrated disposition of the 101-record subset",
+       x = "Records", y = NULL) +
+  theme_sr(8.8) +
+  theme(axis.text.y = element_text(size = 7.5), panel.grid.major.y = element_blank())
 
-  scale_y <- 0.25 / 101
-  source_gap <- 0.014
-  destination_gap <- 0.010
-  source_bounds <- list(
-    robust_coloc = c(lo = 0.600 - 14 * scale_y, hi = 0.600),
-    prior_sensitive_coloc = c(
-      lo = 0.600 - 14 * scale_y - source_gap - 87 * scale_y,
-      hi = 0.600 - 14 * scale_y - source_gap
+p4d <- ggplot() +
+  annotate("text", x = 0.5, y = 0.70, label = "0 / 101", family = FONT,
+           size = 11, fontface = "bold", colour = COL$navy) +
+  annotate("text", x = 0.5, y = 0.45,
+           label = "met every documented\nmechanism-support criterion",
+           family = FONT, size = 3.6, fontface = "bold", colour = COL$ink) +
+  annotate("text", x = 0.5, y = 0.18,
+           label = "The result is specific to the stated criteria\nand available summary data.",
+           family = FONT, size = 2.8, colour = COL$grey) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0, 1), clip = "off") +
+  theme_void(base_family = FONT) +
+  theme(plot.background = element_rect(fill = "#F7F9FA", colour = "#9CB2C8", linewidth = 0.8),
+        plot.margin = margin(9, 9, 9, 9))
+
+p4 <- p4a / p4b / (p4c | p4d) +
+  plot_layout(heights = c(0.24, 0.52, 0.24), widths = c(0.68, 0.32)) +
+  plot_annotation(
+    caption = paste(
+      "Counts are trait-specific analysis-window records, not independent physical loci.",
+      "ABF classifications are prior- and model-dependent and do not establish mediation or a trait-specific causal mechanism."
     )
+  ) &
+  theme(
+    plot.tag = element_text(family = FONT, face = "bold", size = 12),
+    plot.title = element_text(family = FONT, face = "bold", size = 10.5),
+    plot.caption = element_text(family = FONT, size = 7.2, colour = COL$grey, hjust = 0)
   )
-  destination_bounds <- list()
-  destination_top <- 0.600
-  for (id in tier_order) {
-    destination_bounds[[id]] <- c(
-      lo = destination_top - tier_expected[[id]] * scale_y,
-      hi = destination_top
-    )
-    destination_top <- destination_bounds[[id]][["lo"]] - destination_gap
-  }
-
-  flows <- copy(flow_expected)
-  flows[, `:=`(source_lo = NA_real_, source_hi = NA_real_,
-               destination_lo = NA_real_, destination_hi = NA_real_)]
-  source_cursor <- vapply(source_bounds, function(z) z[["hi"]], numeric(1))
-  for (i in seq_len(nrow(flows))) {
-    id <- flows$abf_class[[i]]
-    flows$source_hi[[i]] <- source_cursor[[id]]
-    flows$source_lo[[i]] <- source_cursor[[id]] - flows$n[[i]] * scale_y
-    source_cursor[[id]] <- flows$source_lo[[i]]
-  }
-  destination_cursor <- vapply(destination_bounds, function(z) z[["hi"]], numeric(1))
-  for (destination in tier_order) {
-    for (source in c("robust_coloc", "prior_sensitive_coloc")) {
-      i <- which(flows$evidence_tier == destination & flows$abf_class == source)
-      if (!length(i)) next
-      flows$destination_hi[[i]] <- destination_cursor[[destination]]
-      flows$destination_lo[[i]] <- destination_cursor[[destination]] - flows$n[[i]] * scale_y
-      destination_cursor[[destination]] <- flows$destination_lo[[i]]
-    }
-  }
-  for (i in order(flows$n, decreasing = TRUE)) {
-    draw_ribbon(
-      0.275, 0.695, flows$source_lo[[i]], flows$source_hi[[i]],
-      flows$destination_lo[[i]], flows$destination_hi[[i]],
-      class_colours[[flows$abf_class[[i]]]]
-    )
-  }
-  for (id in names(source_bounds)) {
-    bounds <- source_bounds[[id]]
-    draw_node(0.250, 0.275, bounds[["lo"]], bounds[["hi"]], class_colours[[id]])
-    grid.text(paste0(class_labels[[id]], "\n", fmt_n(class_expected[[id]])),
-              x = 0.235, y = mean(bounds), just = "right",
-              gp = gpar(fontfamily = FONT, fontsize = 7.4, fontface = "bold",
-                        col = COL$ink, lineheight = 1.05))
-  }
-
-  tier_text <- c(
-    abf_label_only_complex_downgraded = paste(
-      "Complex-region downgraded", "55 total", "4 robust + 51 prior-sensitive", sep = "\n"
-    ),
-    abf_label_only_forward_unassessable = paste(
-      "Regional forward direction", "unassessable (35 total)",
-      "10 robust + 25 prior-sensitive", sep = "\n"
-    ),
-    abf_prior_sensitive_forward_consistent = paste(
-      "Prior-sensitive and", "forward-consistent (10)", "all prior-sensitive", sep = "\n"
-    ),
-    abf_label_only_forward_opposite = paste(
-      "Opposite regional direction", "1 prior-sensitive record", sep = "\n"
-    )
-  )
-  tier_label_y <- vapply(destination_bounds, mean, numeric(1))
-  tier_label_y[["abf_prior_sensitive_forward_consistent"]] <- 0.350
-  tier_label_y[["abf_label_only_forward_opposite"]] <- 0.300
-  for (id in tier_order) {
-    bounds <- destination_bounds[[id]]
-    draw_node(0.695, 0.720, bounds[["lo"]], bounds[["hi"]], tier_colours[[id]])
-    grid.lines(x = unit(c(0.720, 0.730, 0.735), "npc"),
-               y = unit(c(mean(bounds), mean(bounds), tier_label_y[[id]]), "npc"),
-               gp = gpar(col = tier_colours[[id]], lwd = 0.7))
-    grid.text(tier_text[[id]], x = 0.740, y = tier_label_y[[id]], just = "left",
-              gp = gpar(fontfamily = FONT, fontsize = 6.8, col = COL$ink, lineheight = 1.03))
-  }
-
-  grid.text("c", x = 0.035, y = 0.260, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 12, fontface = "bold", col = COL$ink))
-  grid.text("Composite mechanism-support assessment", x = 0.057, y = 0.260, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 11.2, fontface = "bold", col = COL$ink))
-  grid.roundrect(x = 0.50, y = 0.155, width = 0.89, height = 0.155,
-                 r = unit(2.2, "mm"),
-                 gp = gpar(fill = "#F7F9FA", col = "#9CB2C8", lwd = 1.1))
-  grid.text("0 / 101", x = 0.160, y = 0.166,
-            gp = gpar(fontfamily = FONT, fontsize = 28, fontface = "bold", col = COL$navy))
-  grid.text("No record met every documented criterion", x = 0.285, y = 0.190, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 10.2, fontface = "bold", col = COL$ink))
-  grid.text(
-    paste(
-      "Required jointly: robust ABF classification; a non-complex region outside predefined",
-      "pleiotropic regions; and assessable, directionally concordant forward and reverse",
-      "regional IVW sensitivity estimates.", sep = "\n"
-    ),
-    x = 0.285, y = 0.135, just = "left",
-    gp = gpar(fontfamily = FONT, fontsize = 7.6, col = COL$ink, lineheight = 1.12)
-  )
-  grid.text("ABF, approximate Bayes factor; H4, shared-causal-variant hypothesis.",
-            x = 0.055, y = 0.052, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 7.2, col = COL$grey))
-  grid.text("Counts are trait-specific analysis-window records, not independent physical loci.",
-            x = 0.055, y = 0.032, just = "left",
-            gp = gpar(fontfamily = FONT, fontsize = 7.2, col = COL$grey))
-  grid.text(
-    "ABF classifications are model- and prior-dependent and do not establish mediation or a trait-specific causal mechanism.",
-    x = 0.055, y = 0.014, just = "left",
-    gp = gpar(fontfamily = FONT, fontsize = 7.2, col = COL$grey)
-  )
-}
-
-figure4_width <- 7.2
-figure4_height <- 6.6
-cairo_pdf(file.path(OUT, "Figure_4.pdf"), width = figure4_width,
-          height = figure4_height, bg = COL$white)
-draw_figure4()
-dev.off()
-png(file.path(OUT, "Figure_4_600dpi.png"), width = figure4_width,
-    height = figure4_height, units = "in", res = 600, bg = COL$white)
-draw_figure4()
-dev.off()
-svg(file.path(OUT, "Figure_4.svg"), width = figure4_width,
-    height = figure4_height, family = FONT, bg = COL$white)
-draw_figure4()
-dev.off()
+save_gg(p4, "Figure_4", 13.0, 10.8)
 
 cat("Scientific Reports Figures 1-4 regenerated from frozen sources\n")
 cat(list.files(OUT, pattern = "^Figure_[1-4]", full.names = FALSE), sep = "\n")
@@ -935,6 +967,7 @@ expected <- c(
   file.path(OUT, "Figure_1_source.mermaid"),
   file.path(OUT, "Figure_2_3_trait_labels.tsv"),
   file.path(OUT, "Figure_2_plot_data.tsv"),
+  file.path(OUT, "Figure_2_screen_data.tsv"),
   file.path(OUT, "Figure_3_matrix_data.tsv"),
   file.path(OUT, "Figure_4_plot_data.tsv")
 )
