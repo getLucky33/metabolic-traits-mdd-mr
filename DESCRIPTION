@@ -1,7 +1,7 @@
 Package: metabolictraitsMDDrepro
 Type: Project
 Title: Verify Aggregate Results and Run Prepared-Input Analyses
-Version: 0.2.14
+Version: 0.2.15
 Authors@R: c(person("Zhouyi", "Wang", role = c("aut", "cre"), email = "wangzhouyi1991@163.com"), person("Qingmei", "Liu", role = "aut"))
 Description: Clean-clone aggregate-result and figure verification, plus documented prepared-input scripts for Mendelian-randomization, robustness, FinnGen and colocalization analyses that require third-party data.
 License: MIT + file LICENSE

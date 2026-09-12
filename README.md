@@ -2,7 +2,7 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.14 improves the journal figures and candidate-level reporting without changing the frozen analyses or results.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.15 makes the frozen MR-PRESSO results and the rule-based reporting and colocalization classifications explicit without changing any statistical result.
 
 ## Choose a reproduction target
 
@@ -57,7 +57,7 @@ Rscript analysis/tests/smoke_test.R
 
 `make_figures.R` verifies the aggregate-input hashes and regenerates PDF, SVG and 600-dpi PNG figures. `08_classify_coloc.R` must recover `14/87/822/3430/2081` records in the five frozen classes. `smoke_test.R` uses temporary synthetic data to exercise TwoSampleMR harmonization, random-effects IVW, MR-PRESSO parsing and the four-prior `coloc.abf` path. Synthetic results are never mixed with manuscript results.
 
-Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact 249-trait Figure 2 screen, the 45 candidate estimates, the Figure 3 evidence matrix, the Figure 4 classification, trait-distribution and integrated-disposition counts, and a checksum file beside the figures. Figure 1 uses neutral GWAS-source headings and presents forward and reverse MR as parallel direction-specific analyses with separately selected instruments. Only the primary forward screen selects the 15-trait candidate set; those candidates enter the robustness, locus and directional assessments, whereas matched reverse-MR results enter only the directional assessment. The layout does not treat reverse MR as validation or proof of reciprocal causality. Figure 2 first shows the complete primary forward screen and then the primary PGC, PGC excluding UK Biobank and FinnGen R13 estimates for each candidate. Figure 3 groups the recorded evidence by analytical role. Figure 4 recomputes the five ABF classifications across 6,434 analysis-window records, distributes the 101 shared-variant-support records across the 15 traits and reports their four integrated dispositions and 0/101 endpoint.
+Use `Rscript scripts/make_figures.R --out <directory>` to choose another output directory. The run also writes the exact 249-trait Figure 2 screen, the 45 candidate estimates, the Figure 3 evidence matrix, the Figure 4 classification, trait-distribution and integrated-disposition counts, and a checksum file beside the figures. Figure 1 uses neutral GWAS-source headings and presents forward and reverse MR as parallel direction-specific analyses with separately selected instruments. Only the primary forward screen selects the 15-trait candidate set; those candidates enter the robustness, locus and directional assessments, whereas matched reverse-MR results enter only the directional assessment. The layout does not treat reverse MR as validation or proof of reciprocal causality. Figure 2 first shows the complete primary forward screen and then the primary PGC, PGC excluding UK Biobank and FinnGen R13 estimates for each candidate. Figure 3 groups the recorded evidence by analytical role and labels its MR-PRESSO column as distortion-only. Figure 4 recomputes the five ABF classifications across 6,434 analysis-window records, explicitly separates the 101-record subset into 14 robust and 87 prior-sensitive records, and reports their four integrated dispositions and 0/101 endpoint.
 
 On each push or pull request, the configured GitHub Actions workflow runs the repository audit, the synthetic input-preflight test, figure reproduction, code parsing, a secret/path scan and the synthetic MR/colocalization smoke test in a clean Linux environment. It does not download or analyse the third-party GWAS files.
 
@@ -104,6 +104,14 @@ These tables permit auditing of the reported results. Recomputing the integrated
 In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the current schema boundary were checked on 2026-09-07 and are recorded in `data/ACCESS.md`; responsible-author attestation for the exact current release schemas and publication boundary was confirmed by Zhouyi Wang on 2026-09-07.
 
 The FinnGen analysis is a cross-outcome comparison, not an independent replication of the PGC major-depression phenotype. Directional concordance does not establish a shared causal mechanism. The single-variant ABF model is not a substitute for multi-signal fine-mapping.
+
+## Frozen reporting and classification rules
+
+All 15 high-precision MR-PRESSO global-test P values are `1e-4`, the recorded 10,000-simulation resolution, and the trait-level outlier counts range from 7 to 19. Thirteen distortion tests are nonsignificant and two are significant. The evidence matrix encodes distortion only; the complete global, outlier and distortion fields are in `data/derived/presso_sensitivity_15.tsv`.
+
+A candidate belongs to the priority reporting group only when its high-precision MR-PRESSO distortion P value is at least 0.05 and its IVW P value remains below 0.05 after removal of variants used as instruments for more than five metabolic traits. All other candidates are secondary. These are reporting categories, not new significance tiers or mechanism labels.
+
+For ABF classification, a ratio pass requires `PP.H4>0.90` and either `PP.H3=0` with positive `PP.H4`, or `PP.H4/PP.H3>3`. Robust colocalization requires a ratio pass in both PGC datasets at `p12=5e-6` and `PP.H4>0.80` in both at `p12=1e-6`. If robust fails, prior-sensitive colocalization requires a ratio pass in the primary PGC dataset at `p12=5e-6` or `1e-5`. The exact distinct-signal, trait-specific/low-power and inconclusive branches are implemented in `analysis/scripts/08_classify_coloc.R`. Only robust, non-complex, non-hotspot records with the documented concordant forward and reverse regional exclusion results can meet the composite mechanism-support criterion; all 101 records fail at least one required condition.
 
 ## Upstream data-use boundary
 

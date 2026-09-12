@@ -1,6 +1,13 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Version 0.2.13 was checked locally and in a clean GitHub Actions environment on 2026-09-11. Version 0.2.14 retains the same frozen analyses and updates the deterministic reporting layer. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 retains the same frozen analyses and clarifies the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.15 release verification (2026-09-12)
+
+- The released MR-PRESSO table is checked for 15 global P values of `1e-4`, trait-level outlier counts of 7–19 and the frozen 13 nonsignificant/2 significant distortion-test split.
+- Figure 1 and Figure 4 explicitly separate the 101-record H4-oriented subset into 14 robust and 87 prior-sensitive classifications. Figure 3 labels its MR-PRESSO column as distortion-only.
+- The README and workflow state the Boolean rule for the nine priority and six secondary reporting groups, the exact robust/prior-sensitive ABF branches and the complete composite mechanism-support branch.
+- The statistical results and all released aggregate inputs are unchanged. Local and clean-checkout verification are required for the release commit.
 
 ## v0.2.14 release verification (2026-09-11)
 

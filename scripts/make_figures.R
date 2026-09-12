@@ -344,8 +344,10 @@ draw_figure1 <- function() {
                  fmt("groups_secondary"), " secondary-reporting traits"),
           0.345, 0.191, size = 6.8, face = "bold", colour = fig$navy, lineheight = 1.10)
   text_at("Locus-level assessment", 0.715, 0.222, size = 7.2, face = "bold", colour = fig$navy)
-  text_at(paste0(fmt("h4_evidence_rows"), " with shared-variant posterior support"),
-          0.715, 0.198, size = 6.4, face = "bold", colour = fig$navy)
+  text_at(paste0(fmt("h4_evidence_rows"), " with posterior support favoring H4\n",
+                 "(", fmt("n_coloc_robust"), " robust; ", fmt("n_coloc_prior"), " prior-sensitive)"),
+          0.715, 0.197, size = 6.2, face = "bold", colour = fig$navy,
+          lineheight = 1.03)
   text_at(paste0(fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"),
                  " records met the composite\nmechanism-support criterion"),
           0.715, 0.169, size = 6.3, colour = fig$slate, lineheight = 1.06)
@@ -383,7 +385,7 @@ mermaid <- c(
   "  R[\"Robustness and sensitivity<br/>Same 15 forward candidates; five estimators; Cochran's Q, MR-Egger and MR-PRESSO<br/>UK Biobank-excluded sensitivity; regional and shared-instrument exclusions\"]",
   paste0("  L[\"Locus evidence<br/>Same 15 forward candidates; ABF colocalization and regional direction checks<br/>MHC and complex-region assessment; ", fmt("coloc_records"), " trait-specific analysis-window records\"]"),
   "  D[\"Directional evidence assessment<br/>15 forward-selected traits; Steiger directionality test at three MDD prevalences<br/>Matched reverse-MR estimates from both complete 249-trait screens\"]",
-  paste0("  G[\"Integrated evidence assessment<br/>", fmt("groups_priority"), " priority-reporting / ", fmt("groups_secondary"), " secondary-reporting traits<br/>", fmt("h4_evidence_rows"), " with shared-variant posterior support; ", fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"), " met the composite criterion\"]"),
+  paste0("  G[\"Integrated evidence assessment<br/>", fmt("groups_priority"), " priority-reporting / ", fmt("groups_secondary"), " secondary-reporting traits<br/>", fmt("h4_evidence_rows"), " with posterior support favoring H4 (", fmt("n_coloc_robust"), " robust; ", fmt("n_coloc_prior"), " prior-sensitive); ", fmt("mechanism_eligible_true"), "/", fmt("h4_evidence_rows"), " met the composite criterion\"]"),
   paste0("  F[\"Separate FinnGen R13 alternative-outcome comparison<br/>", fmt("fg13_dir_same"), "/", fmt("matrix_fg13_rows"), " directionally concordant; reporting groups unchanged<br/>Not an independent replication\"]"),
   "  E --> FW",
   "  O --> FW",
@@ -604,7 +606,7 @@ matrix_wide <- data.table(
   `Effect\n5 methods` = paste0(t2$five_dir, "/5"),
   `Robustness\nPalindromic exclusion` = ifelse(t2$a3_ok == TRUE, "Yes", "No"),
   `Robustness\nUK Biobank excluded` = ifelse(t2$noukbb_ok == TRUE, "Yes", "No"),
-  `Robustness\nMR-PRESSO` = ifelse(t2$presso == TRUE, "Yes", "No"),
+  `Robustness\nNo MR-PRESSO distortion` = ifelse(t2$presso == TRUE, "Yes", "No"),
   `Sensitivity\nShared-IV removal` = ifelse(t2$pleio_ok == TRUE, "Yes", "No"),
   `Diagnostics\nEgger int.` = ifelse(t2$egger_sig == TRUE, "Sig", "NS"),
   `Diagnostics\nCochran Q` = ifelse(t2$q_sig == TRUE, "Sig", "NS"),
@@ -619,7 +621,7 @@ m3 <- melt(matrix_wide, id.vars = "trait", variable.name = "layer", value.name =
 m3[, domain := fcase(
   layer %chin% c("Effect\nIVW dir.", "Effect\n5 methods"), "Association direction",
   layer %chin% c("Robustness\nPalindromic exclusion", "Robustness\nUK Biobank excluded",
-                 "Robustness\nMR-PRESSO", "Sensitivity\nShared-IV removal"),
+                 "Robustness\nNo MR-PRESSO distortion", "Sensitivity\nShared-IV removal"),
     "Robustness and sensitivity",
   layer %chin% c("Diagnostics\nEgger int.", "Diagnostics\nCochran Q"), "Diagnostics",
   layer == "Direction\nReverse MR", "Directionality",
@@ -636,7 +638,7 @@ layer_labels <- c(
   "Effect\n5 methods" = "Five-method\nagreement",
   "Robustness\nPalindromic exclusion" = "Palindromic\nexclusion",
   "Robustness\nUK Biobank excluded" = "UK Biobank\nexcluded",
-  "Robustness\nMR-PRESSO" = "MR-PRESSO",
+  "Robustness\nNo MR-PRESSO distortion" = "No MR-PRESSO\ndistortion",
   "Sensitivity\nShared-IV removal" = "Shared-instrument\nremoval",
   "Diagnostics\nEgger int." = "MR-Egger\nintercept",
   "Diagnostics\nCochran Q" = "Cochran's Q",
@@ -867,7 +869,7 @@ p4a <- ggplot(all_records_plot, aes(n, "All records", fill = abf_class)) +
   labs(
     tag = "a",
     title = "ABF classifications across 6,434 trait-specific analysis-window records",
-    subtitle = "The 101 robust or prior-sensitive records (1.57%) entered integrated review",
+    subtitle = "101 records entered integrated review: 14 robust and 87 prior-sensitive",
     x = "Analysis-window records", y = NULL
   ) +
   theme_sr(9.2) +
@@ -898,7 +900,7 @@ p4b <- ggplot(trait_support, aes(n, trait_display, fill = abf_class)) +
   scale_x_continuous(breaks = seq(0, 10, 2), limits = c(0, 10), expand = expansion(mult = c(0, 0.01))) +
   labs(
     tag = "b",
-    title = "Distribution of the 101 shared-variant-support records across the 15 traits",
+    title = "Distribution of 14 robust and 87 prior-sensitive records across the 15 traits",
     x = "Records per trait", y = NULL
   ) +
   theme_sr(9.0) +

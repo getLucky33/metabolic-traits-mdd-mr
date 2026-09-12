@@ -2,7 +2,7 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
-Release v0.2.14 retains the frozen analysis results and updates the reporting layer. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role; and Figure 4 adds the per-trait distribution of the 101 shared-variant-support records and their four integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+Release v0.2.15 retains the frozen analysis results and makes the MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules explicit. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
 
 ## 0. Establish the reproduction boundary
 
@@ -108,6 +108,8 @@ Rscript analysis/scripts/05_run_robustness.R \
 
 Formal mode requires exactly 15 candidates, at least 10,000 MR-PRESSO simulations and a complete 249-trait IV manifest for the shared-instrument count. `--pilot` permits a smaller smoke test and prefixes its outputs with `pilot_`; a smaller simulation count never produces a file named `presso_rerun_10000.tsv`.
 
+For the frozen high-precision candidate run, all 15 MR-PRESSO global-test P values are `1e-4` and 7–19 outlying instruments are recorded per trait. Thirteen distortion tests are nonsignificant and two are significant. The global test assesses overall horizontal pleiotropy; the distortion test asks whether outlier correction materially changes the estimate. The priority reporting group requires both a nonsignificant distortion test and nominal significance after removing variants shared as instruments by more than five metabolic traits; all remaining candidates are secondary.
+
 The Steiger calculation assigns every exposure SNP `N=599,249`, the maximum exposure meta-analysis sample size, because per-SNP effective N was not retained in the frozen harmonized inputs. This approximation tends to reduce exposure-side R² when the true SNP-specific N is smaller, but it can still change Steiger P values or near-boundary direction calls. The prevalence-grid results are sensitivity evidence and do not rule out clinical reverse causation.
 
 ## 6. FinnGen comparison
@@ -189,7 +191,7 @@ Rscript analysis/scripts/08_classify_coloc.R \
   --out-dir results/analysis/coloc-replay
 ```
 
-For the 6,434-row frozen manifest this command fails unless all five class counts equal `14/87/822/3430/2081`. MHC exclusion uses interval overlap between `window_start/window_end` and GRCh38 chr6:25–34 Mb, including boundary contact.
+For the 6,434-row frozen manifest this command fails unless all five class counts equal `14/87/822/3430/2081`. MHC exclusion uses interval overlap between `window_start/window_end` and GRCh38 chr6:25–34 Mb, including boundary contact. The implemented ratio pass requires `PP.H4>0.90` and either `PP.H3=0` with positive `PP.H4`, or `PP.H4/PP.H3>3`. Robust colocalization requires a ratio pass in both PGC datasets at `p12=5e-6` plus `PP.H4>0.80` in both at `p12=1e-6`; if robust fails, prior-sensitive colocalization requires a ratio pass in the primary PGC dataset at `p12=5e-6` or `1e-5`. Only robust, non-complex records outside the predefined hotspot regions can enter the composite mechanism-support branch, which also requires the recorded forward and reverse regional exclusion estimates to be assessable and directionally concordant.
 
 ## 8. Verification
 
