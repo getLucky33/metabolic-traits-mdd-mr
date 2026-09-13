@@ -1,6 +1,13 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 retains the same frozen analyses and clarifies the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 clarified the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Version 0.2.16 adds a candidate-level leave-one-out summary without changing the frozen analyses. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.16 release verification (2026-09-13)
+
+- The 15-trait leave-one-out summary contains 4,993 single-variant deletions, exactly matching the sum of candidate instrument counts.
+- Every deletion retains the corresponding primary IVW direction and nominal significance; the largest leave-one-out P value is `0.0021671198852684`.
+- The released summary contains trait-level counts and extrema but no SNP identifiers or source association rows.
+- The manuscript reporting groups remain defined only by the MR-PRESSO distortion and widely shared-instrument criteria; leave-one-out stability does not alter the frozen 9/6 assignment.
 
 ## v0.2.15 release verification (2026-09-12)
 

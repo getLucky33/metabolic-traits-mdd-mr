@@ -1,0 +1,16 @@
+trait_id	trait_display	n_leave_one_out_estimates	min_beta	max_beta	max_p	direction_change_n	nominal_loss_n	all_primary_direction	all_nominal_p_lt_0_05
+Ratio_of_monounsaturated_fatty_acids_to_total_fatty_acids	Monounsaturated fatty acids/total fatty acids ratio	343	0.0735149164287339	0.082631959643762	1.86883586399617e-06	0	0	TRUE	TRUE
+Ratio_of_polyunsaturated_fatty_acids_to_monounsaturated_fatty_acids	Polyunsaturated fatty acids/monounsaturated fatty acids ratio	323	-0.0771886090747642	-0.0637486269713021	4.39761809894899e-05	0	0	TRUE	TRUE
+GlycA	Glycoprotein acetyls	328	0.0675121831565906	0.0820650901026144	5.11061828285463e-06	0	0	TRUE	TRUE
+Ratio_of_polyunsaturated_fatty_acids_to_total_fatty_acids	Polyunsaturated fatty acids/total fatty acids ratio	267	-0.0787261391013579	-0.0604188491016674	0.000550794136336962	0	0	TRUE	TRUE
+Cholesteryl_esters_to_total_lipids_ratio_in_very_small_VLDL	Cholesteryl esters/total lipids ratio in very small very-low-density lipoprotein	353	-0.0525137153734817	-0.0416218658659449	0.000504337615822312	0	0	TRUE	TRUE
+Triglycerides_to_total_lipids_ratio_in_very_large_HDL	Triglycerides/total lipids ratio in very large high-density lipoprotein	368	0.0457773373724896	0.056599602913809	0.000438789354787591	0	0	TRUE	TRUE
+Cholesterol_to_total_lipids_ratio_in_large_HDL	Cholesterol/total lipids ratio in large high-density lipoprotein	387	-0.0529894177352536	-0.0434815243638288	0.000627694541017501	0	0	TRUE	TRUE
+Cholesterol_in_very_large_HDL	Cholesterol in very large high-density lipoprotein	396	-0.051201447232013	-0.0403746251679079	0.00141546099451309	0	0	TRUE	TRUE
+Monounsaturated_fatty_acids	Monounsaturated fatty acids	289	0.0437623919335085	0.0559443588998565	0.00127897447541279	0	0	TRUE	TRUE
+Cholesterol_to_total_lipids_ratio_in_very_large_VLDL	Cholesterol/total lipids ratio in very large very-low-density lipoprotein	283	-0.0637197785571963	-0.0516042570131142	0.000533383475708416	0	0	TRUE	TRUE
+Triglycerides_to_total_lipids_ratio_in_very_small_VLDL	Triglycerides/total lipids ratio in very small very-low-density lipoprotein	346	0.0404261374621767	0.0515763050993671	0.00118404274942666	0	0	TRUE	TRUE
+Cholesterol_to_total_lipids_ratio_in_medium_VLDL	Cholesterol/total lipids ratio in medium very-low-density lipoprotein	327	-0.0562975630929752	-0.0465675767297239	0.00110511171493355	0	0	TRUE	TRUE
+Free_cholesterol_in_very_large_HDL	Free cholesterol in very large high-density lipoprotein	338	-0.0505788928116213	-0.0387241401065494	0.00216711988526845	0	0	TRUE	TRUE
+Cholesteryl_esters_to_total_lipids_ratio_in_medium_VLDL	Cholesteryl esters/total lipids ratio in medium very-low-density lipoprotein	341	-0.0568746867162206	-0.0459121896699301	0.0011993497760407	0	0	TRUE	TRUE
+Free_cholesterol_to_total_lipids_ratio_in_medium_VLDL	Free cholesterol/total lipids ratio in medium very-low-density lipoprotein	304	-0.0511873921253275	-0.0405871909453219	0.00175033362662972	0	0	TRUE	TRUE

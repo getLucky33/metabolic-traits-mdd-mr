@@ -2,7 +2,7 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.15 makes the frozen MR-PRESSO results and the rule-based reporting and colocalization classifications explicit without changing any statistical result.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.16 adds an auditable 15-trait leave-one-out summary and clarifies how the sensitivity results define the reporting groups without changing any statistical result.
 
 ## Choose a reproduction target
 
@@ -95,6 +95,7 @@ Released audit tables include:
 
 - three 249-trait screens;
 - the 15 candidate-level forward-MR estimates for the PGC outcome excluding UK Biobank used in Figure 2;
+- the 15-trait leave-one-out summary, which reports aggregate stability without releasing SNP-level rows;
 - the 6,434-row locus manifest and ABF classification inputs/outputs;
 - the 101-row integrated evidence table and FinnGen tool-loss/cross-outcome summaries; and
 - exploratory SuSiE status, binding and stopping summaries.
@@ -108,6 +109,8 @@ The FinnGen analysis is a cross-outcome comparison, not an independent replicati
 ## Frozen reporting and classification rules
 
 All 15 high-precision MR-PRESSO global-test P values are `1e-4`, the recorded 10,000-simulation resolution, and the trait-level outlier counts range from 7 to 19. Thirteen distortion tests are nonsignificant and two are significant. The evidence matrix encodes distortion only; the complete global, outlier and distortion fields are in `data/derived/presso_sensitivity_15.tsv`.
+
+The candidate-level leave-one-out summary contains 4,993 single-variant deletions across the 15 traits. Every deletion retained the sign of the corresponding primary IVW estimate and remained nominally significant. The released table is trait-level and contains no SNP identifiers.
 
 A candidate belongs to the priority reporting group only when its high-precision MR-PRESSO distortion P value is at least 0.05 and its IVW P value remains below 0.05 after removal of variants used as instruments for more than five metabolic traits. All other candidates are secondary. These are reporting categories, not new significance tiers or mechanism labels.
 

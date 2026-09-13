@@ -101,17 +101,17 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.15" not in description or "version: 0.2.15" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.15")
+if "Version: 0.2.16" not in description or "version: 0.2.16" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.16")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
 verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if ("Version 0.2.15" not in readme or
-        "Release v0.2.15" not in workflow or
-        "## v0.2.15 release verification" not in verification):
+if ("Version 0.2.16" not in readme or
+        "Release v0.2.16" not in workflow or
+        "## v0.2.16 release verification" not in verification):
     errors.append("release version is not synchronized across repository documentation")
 for rel in (
     "DATA_SOURCES.md",
@@ -124,7 +124,7 @@ for rel in (
 catalog_file = ROOT / "analysis" / "manifests" / "metabolic_traits_249.tsv"
 if catalog_file.is_file():
     if hashlib.sha256(catalog_file.read_bytes()).hexdigest() != "4edabd80342a07dc0ab766f65d84d4cce6a1335a668ce10c77088a42021ea719":
-        errors.append("metabolic accession-to-trait mapping differs from the verified v0.2.15 catalog")
+        errors.append("metabolic accession-to-trait mapping differs from the verified v0.2.16 catalog")
     with catalog_file.open(encoding="utf-8", newline="") as handle:
         catalog = list(csv.DictReader(handle, delimiter="\t"))
     expected_accessions = [f"GCST{number}" for number in range(90451106, 90451355)]
@@ -379,6 +379,34 @@ for row in pleio:
         if not (math.isfinite(se) and abs(float(row[f"{prefix}_ci_lo"]) - (b - 1.96 * se)) < 1e-12 and
                 abs(float(row[f"{prefix}_ci_hi"]) - (b + 1.96 * se)) < 1e-12):
             errors.append(f"broad-pleiotropy SE/CI assertion failed: {row['trait_id']} {prefix}")
+
+loo = read_tsv("leave_one_out_summary_15.tsv")
+labels_by_trait = {row["trait_id"]: row["trait_display"] for row in read_tsv("trait_labels.tsv")}
+if (len(loo) != 15 or len({row["trait_id"] for row in loo}) != 15 or
+        [row["trait_id"] for row in loo] != candidate_order):
+    errors.append("leave-one-out summary must contain the 15 candidates in frozen order")
+if len(loo) == 15:
+    for row in loo:
+        trait = row["trait_id"]
+        try:
+            n_estimates = int(row["n_leave_one_out_estimates"])
+            min_beta = float(row["min_beta"])
+            max_beta = float(row["max_beta"])
+            max_p = float(row["max_p"])
+            main_beta = float(next(item["ivw_b"] for item in forward_main if item["trait"] == trait))
+            main_n = int(next(item["n_iv"] for item in forward_main if item["trait"] == trait))
+        except (KeyError, TypeError, ValueError, StopIteration):
+            errors.append(f"invalid leave-one-out summary row: {trait}")
+            continue
+        if (n_estimates != main_n or row["trait_display"] != labels_by_trait.get(trait) or
+                not all(math.isfinite(value) for value in (min_beta, max_beta, max_p)) or
+                min_beta > max_beta or max_p >= 0.05 or min_beta * main_beta <= 0 or
+                max_beta * main_beta <= 0 or row["direction_change_n"] != "0" or
+                row["nominal_loss_n"] != "0" or row["all_primary_direction"] != "TRUE" or
+                row["all_nominal_p_lt_0_05"] != "TRUE"):
+            errors.append(f"leave-one-out stability assertion failed: {trait}")
+    if sum(int(row["n_leave_one_out_estimates"]) for row in loo) != 4993:
+        errors.append("leave-one-out summary must contain 4,993 single-variant deletions")
 
 presso = read_tsv("presso_sensitivity_15.tsv")
 if len(presso) != 15 or len({row["trait_id"] for row in presso}) != 15 or any(

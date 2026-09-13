@@ -2,7 +2,7 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
-Release v0.2.15 retains the frozen analysis results and makes the MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules explicit. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+Release v0.2.16 retains the frozen analysis results and adds a trait-level summary of the candidate leave-one-out analysis. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
 
 ## 0. Establish the reproduction boundary
 
@@ -60,9 +60,15 @@ Rscript analysis/scripts/09_summarise_instrument_qc.R \
   --selection-qc data-local/ivs/instrument_selection_qc.tsv \
   --trait-labels data/derived/trait_display_dictionary.tsv \
   --out results/analysis/instrument_strength_qc.tsv
+
+python analysis/scripts/05b_summarise_leave_one_out.py \
+  --leave-one-out results/analysis/forward/mr_leaveoneout.tsv \
+  --out results/analysis/leave_one_out_summary_15.tsv
 ```
 
 I²GX uses the inverse-variance-weighted SNP-exposure heterogeneity formula documented in the README. If the selection-stage LD-panel denominator is unavailable, the script writes `NA` and an explicit reason; it does not infer missingness from the final instruments.
+
+The leave-one-out summarizer reads the complete forward output once, retains only the 15 frozen candidates, verifies the `All` row against the released forward estimate and writes trait-level counts and extrema. It does not release the deleted SNP identifiers.
 
 ## 4. Reverse MR
 
