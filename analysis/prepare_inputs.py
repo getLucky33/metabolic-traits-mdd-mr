@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG_COLUMNS = {"accession", "trait", "trait_display", "genome_build", "sample_size", "download_url"}
 METABOLIC_COLUMNS = {
     "variant_id", "effect_allele", "other_allele", "beta", "standard_error",
-    "effect_allele_frequency", "neg_log_10_p_value",
+    "effect_allele_frequency", "neg_log_10_p_value", "n",
 }
 PGC_COLUMNS = {"CHR", "BP", "SNP", "A1", "A2", "OR", "SE", "P", "Nca", "Nco"}
 FINNGEN_COLUMNS = [

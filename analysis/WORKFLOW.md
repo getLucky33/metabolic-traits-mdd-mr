@@ -2,7 +2,7 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
-Release v0.2.16 retains the frozen analysis results and adds a trait-level summary of the candidate leave-one-out analysis. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+Release v0.2.17 adds complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for the Steiger sensitivity analysis. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
 
 ## 0. Establish the reproduction boundary
 
@@ -94,13 +94,30 @@ Without `--traits`, each reverse run also requires exactly 249 traits and writes
 ## 5. Robustness analyses
 
 ```bash
+# Required one-trait recovery smoke test
+python analysis/scripts/05a_recover_exposure_variant_n.py \
+  --exposure-manifest analysis/manifests/exposure_manifest.local.tsv \
+  --iv-manifest analysis/manifests/iv_manifest.local.tsv \
+  --out data-local/robustness-pilot/exposure_variant_n.tsv \
+  --qc-out data-local/robustness-pilot/exposure_variant_n_qc.tsv \
+  --traits Trait_1 --workers 1 --max-n 599249
+
 # Required one-trait pilot before the formal run
 Rscript analysis/scripts/05_run_robustness.R \
   --harm-dir data-local/harmonised \
   --out-dir results/analysis/robustness-pilot \
   --traits Trait_1 --pilot \
+  --exposure-n-file data-local/robustness-pilot/exposure_variant_n.tsv \
   --presso-nb 500 --presso-seed 20260815 \
   --prevalences 0.08,0.15,0.20
+
+# Full 15-trait exposure-N recovery after checking pilot schema, counts and timing
+python analysis/scripts/05a_recover_exposure_variant_n.py \
+  --exposure-manifest analysis/manifests/exposure_manifest.local.tsv \
+  --iv-manifest analysis/manifests/iv_manifest.local.tsv \
+  --out data-local/robustness/exposure_variant_n.tsv \
+  --qc-out data-local/robustness/exposure_variant_n_qc.tsv \
+  --traits Trait_1,...,Trait_15 --workers 4 --max-n 599249
 
 # Formal 15-trait run
 Rscript analysis/scripts/05_run_robustness.R \
@@ -108,15 +125,17 @@ Rscript analysis/scripts/05_run_robustness.R \
   --iv-manifest analysis/manifests/iv_manifest.local.tsv \
   --out-dir results/analysis/robustness \
   --traits Trait_1,...,Trait_15 \
+  --exposure-n-file data-local/robustness/exposure_variant_n.tsv \
+  --workers 4 \
   --presso-nb 10000 --presso-seed 20260815 \
   --prevalences 0.08,0.15,0.20
 ```
 
-Formal mode requires exactly 15 candidates, at least 10,000 MR-PRESSO simulations and a complete 249-trait IV manifest for the shared-instrument count. `--pilot` permits a smaller smoke test and prefixes its outputs with `pilot_`; a smaller simulation count never produces a file named `presso_rerun_10000.tsv`.
+The recovery script reads each gzip-compressed source once, requires a unique `variant_id` match for every requested IV and rejects non-positive or above-maximum `n` values. Its detailed output is a local SNP-level intermediate and must not be committed. Formal robustness mode requires exactly 15 candidates, the recovered exposure-N table, at least 10,000 MR-PRESSO simulations and a complete 249-trait IV manifest for the shared-instrument count. `--pilot` permits a smaller smoke test and prefixes its outputs with `pilot_`; a smaller simulation count never produces a file named `presso_rerun_10000.tsv`.
 
-For the frozen high-precision candidate run, all 15 MR-PRESSO global-test P values are `1e-4` and 7–19 outlying instruments are recorded per trait. Thirteen distortion tests are nonsignificant and two are significant. The global test assesses overall horizontal pleiotropy; the distortion test asks whether outlier correction materially changes the estimate. The priority reporting group requires both a nonsignificant distortion test and nominal significance after removing variants shared as instruments by more than five metabolic traits; all remaining candidates are secondary.
+For the frozen high-precision candidate run, each MR-PRESSO global test had zero exceedances in 10,000 simulations, so its display is `P<1e-04` and its numeric resolution field is `1e-4`; 7–19 outlying instruments are recorded per trait. Thirteen distortion tests are nonsignificant and two are significant. Raw and outlier-corrected standard errors come directly from the saved MR-PRESSO objects, and the reported 95% intervals use the recorded residual degrees of freedom. The global test assesses overall horizontal pleiotropy; the distortion test asks whether outlier correction materially changes the estimate. The priority reporting group requires both a nonsignificant distortion test and nominal significance after removing variants shared as instruments by more than five metabolic traits; all remaining candidates are secondary.
 
-The Steiger calculation assigns every exposure SNP `N=599,249`, the maximum exposure meta-analysis sample size, because per-SNP effective N was not retained in the frozen harmonized inputs. This approximation tends to reduce exposure-side R² when the true SNP-specific N is smaller, but it can still change Steiger P values or near-boundary direction calls. The prevalence-grid results are sensitivity evidence and do not rule out clinical reverse causation.
+The formal Steiger calculation uses the source-GWAS `n` value matched to each exposure variant. Recovery matched 5,665/5,665 candidate IVs and observed N values of 413,897 and 599,249. The formal run fails if a harmonized SNP lacks a valid source match. All 15 candidates retained the exposure-to-outcome direction at prevalences 0.08, 0.15 and 0.20; these results remain sensitivity evidence and do not rule out clinical reverse causation.
 
 ## 6. FinnGen comparison
 
@@ -144,7 +163,7 @@ The primary cross-outcome field is `cross_outcome_support_label`, with values `F
 
 ## 7. Colocalization
 
-Build the locus manifest from the complete forward screen, final exposure IVs, the two GRCh38 MDD coordinate sets and the frozen reverse-tier table. The anchor rule joins a lead only when it is within 1 Mb of the first lead in the cluster, then adds a 500-kb flank.
+Build the locus manifest from the complete forward screen, final exposure IVs, the two GRCh38 MDD coordinate sets and the frozen reverse-tier table. MDD seeds are added for 13 candidates, comprising 9 confirmatory-tier and 4 sensitivity-tier traits; the 2 exclusion-tier candidates use forward seeds only. The anchor rule joins a seed only when it is within 1 Mb of the first seed in the cluster, then adds a 500-kb flank. The resulting trait-specific windows may overlap and are not counts of independent physical loci.
 
 ```bash
 Rscript analysis/scripts/10_build_locus_manifest.R \

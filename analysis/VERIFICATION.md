@@ -1,6 +1,14 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 clarified the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Version 0.2.16 adds a candidate-level leave-one-out summary without changing the frozen analyses. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 clarified the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Version 0.2.16 added a candidate-level leave-one-out summary. Version 0.2.17 adds complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for Steiger sensitivity analysis. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.17 release verification (2026-09-14)
+
+- All 15 candidates were rerun with `NbDistribution=10000` and seed 20260815 while retaining the complete MR-PRESSO objects.
+- Raw and outlier-corrected standard errors were read directly from `Main MR results$Sd`; two-sided 95% confidence intervals use Student's t distribution with residual degrees of freedom recorded in the released table. No uncertainty value was reconstructed from a P value.
+- The eight previously frozen core fields match the earlier 10,000-run table exactly for all 15 traits. Every global test had zero simulated exceedances, so the display field is `P<1e-04` and the numeric field records the `1e-4` simulation resolution.
+- Source-GWAS recovery matched 5,665/5,665 candidate IVs. The observed variant-level exposure sample sizes were 413,897 and 599,249; the 15-candidate Steiger direction was unchanged at outcome prevalences 0.08, 0.15 and 0.20. The maximum absolute exposure-R² change from the previous calculation was `0.0003087243`.
+- The released MR-PRESSO, Steiger and sample-size-QC tables contain 15 candidate-level rows each and no SNP identifiers or local paths. The static audit checks their exact schemas, candidate order, cross-table labels, numerical invariants and release boundary.
 
 ## v0.2.16 release verification (2026-09-13)
 
@@ -100,7 +108,7 @@ Verification history: real-data one-trait checks were completed on 2026-09-06; v
 - The three released 249-row screen tables have frozen four-level distributions of `15/53/35/146`, `122/49/9/69` and `89/67/9/84`.
 - The final-IV QC table contains 249 uniquely mapped trait IDs/display names. The global minimum F is 29.7168760049588, and all 15 Bonferroni candidates have finite I²GX values.
 - The 15-row broad-pleiotropy rerun retained SE and 95% CI. Its before/after beta and P columns match the prior frozen table exactly.
-- A 20-instrument MR-PRESSO smoke test confirmed that `Main MR results$Sd` is parsed into raw/corrected SE and 95% CI fields. The earlier frozen 10,000-run summary did not retain `Sd`, so its released SE/CI fields remain `NA` with a reason and were not inferred from P values.
+- A 20-instrument MR-PRESSO smoke test confirmed that `Main MR results$Sd` is parsed into raw/corrected SE and 95% CI fields. At v0.2.3, the archived 10,000-run summary lacked the saved run objects and therefore retained `NA` rather than inferring uncertainty from P values. Version 0.2.17 supersedes that candidate-level table with fields read directly from the retained rerun objects.
 - The synthetic MR/colocalization smoke test, release-table audit, R parse check and deterministic Figure 1–4 regeneration passed in the local workspace under R 4.5.1. The v0.2.3 tag and release must point to a commit for which all jobs in `.github/workflows/reproduce.yml` have passed. The corresponding GitHub Actions run is the authoritative remote clean-checkout verification record.
 
 ## Real-data one-trait smoke tests
@@ -116,7 +124,7 @@ The portable scripts were run against the private frozen inputs for Acetate. The
 | Reverse random-effects IVW SE | 198 | 0.0088452317405902 | 0.0088452317405902 | exact match |
 | Reverse random-effects IVW P | 198 | 0.000135888019130649 | 0.000135888019130649 | exact match |
 
-The hotspot-removal and Steiger outputs for Acetate also matched the frozen values, including exposure R² `0.00528761794062718` and outcome R² `0.0000505902508865417` at prevalence 0.15. Exposure R² used the fixed maximum exposure sample size of 599,249 rather than per-SNP effective N; this approximation can affect Steiger R², P values and near-boundary direction calls.
+The hotspot-removal output for Acetate also matched the frozen value. The v0.2.17 candidate-level verification above supersedes the earlier one-trait Steiger check and uses the source-GWAS `n` matched to each variant.
 
 MR-PRESSO was disabled for the equality checks so the comparison isolates the deterministic estimator. The separate robustness stage fixes the MR-PRESSO seed at 20260815 and requires at least 10,000 simulations for formal candidates.
 

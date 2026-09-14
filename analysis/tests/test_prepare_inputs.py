@@ -27,7 +27,7 @@ def main() -> None:
         maps = base / "maps"
         metabolic_columns = [
             "variant_id", "effect_allele", "other_allele", "beta", "standard_error",
-            "effect_allele_frequency", "neg_log_10_p_value",
+            "effect_allele_frequency", "neg_log_10_p_value", "n",
         ]
         for index, row in enumerate(catalog):
             write_gzip(metabolic / row["accession"] / f"{row['accession']}.tsv.gz", metabolic_columns)

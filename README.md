@@ -2,7 +2,7 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.16 adds an auditable 15-trait leave-one-out summary and clarifies how the sensitivity results define the reporting groups without changing any statistical result.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.17 adds complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for the Steiger sensitivity analysis.
 
 ## Choose a reproduction target
 
@@ -85,7 +85,7 @@ The released code covers:
 
 Frozen parameters are listed in `analysis/config/parameters.tsv`. The mapping between the portable modules and the analysis-time source scripts, including source SHA-256 hashes, is in `analysis/provenance.tsv`.
 
-The released Steiger code uses `599,249`, the maximum exposure meta-analysis sample size, for every exposure SNP because per-SNP effective sample sizes were not retained in the frozen harmonized inputs. This is an approximation: with beta and SE fixed, a larger substituted N tends to reduce the estimated exposure-side R², and it can change Steiger P values or near-boundary direction calls. The Steiger layer should therefore be read as a sensitivity analysis, not as proof against reverse causation.
+The Steiger workflow now recovers the `n` value for each candidate instrument from its matching `meta_EUR` source row before harmonization. Recovery matched all 5,665 candidate IVs; the observed source values were 413,897 and 599,249. All 15 candidate estimates retained the exposure-to-outcome direction at outcome prevalences 0.08, 0.15 and 0.20. This remains a directionality sensitivity analysis rather than proof against reverse causation.
 
 ## Reproducibility boundary
 
@@ -96,19 +96,20 @@ Released audit tables include:
 - three 249-trait screens;
 - the 15 candidate-level forward-MR estimates for the PGC outcome excluding UK Biobank used in Figure 2;
 - the 15-trait leave-one-out summary, which reports aggregate stability without releasing SNP-level rows;
+- the complete 15-trait MR-PRESSO summary and candidate-level Steiger/sample-size QC, without variant identifiers or local paths;
 - the 6,434-row locus manifest and ABF classification inputs/outputs;
 - the 101-row integrated evidence table and FinnGen tool-loss/cross-outcome summaries; and
 - exploratory SuSiE status, binding and stopping summaries.
 
 These tables permit auditing of the reported results. Recomputing the integrated-evidence and SuSiE stages still requires unreleased regional data, LD matrices and author credible-set inputs.
 
-In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the current schema boundary were checked on 2026-09-07 and are recorded in `data/ACCESS.md`; responsible-author attestation for the exact current release schemas and publication boundary was confirmed by Zhouyi Wang on 2026-09-07.
+In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the v0.2.17 aggregate-only schema boundary are recorded in `data/ACCESS.md`; Zhouyi Wang confirmed the responsible-author attestation for this release boundary on 2026-09-14.
 
 The FinnGen analysis is a cross-outcome comparison, not an independent replication of the PGC major-depression phenotype. Directional concordance does not establish a shared causal mechanism. The single-variant ABF model is not a substitute for multi-signal fine-mapping.
 
 ## Frozen reporting and classification rules
 
-All 15 high-precision MR-PRESSO global-test P values are `1e-4`, the recorded 10,000-simulation resolution, and the trait-level outlier counts range from 7 to 19. Thirteen distortion tests are nonsignificant and two are significant. The evidence matrix encodes distortion only; the complete global, outlier and distortion fields are in `data/derived/presso_sensitivity_15.tsv`.
+For all 15 candidate reruns, the MR-PRESSO global test had zero simulated exceedances among 10,000 draws. The display field therefore reports `P<1e-04`, while the numeric field records the simulation resolution as `1e-4`; trait-level outlier counts range from 7 to 19. Thirteen distortion tests are nonsignificant and two are significant. The evidence matrix encodes distortion only. `data/derived/presso_sensitivity_15.tsv` contains the complete candidate-level global, outlier, distortion and regression fields, including standard errors retained directly from `Main MR results$Sd`, residual degrees of freedom and two-sided t-based 95% confidence intervals. No uncertainty value was reconstructed from a P value.
 
 The candidate-level leave-one-out summary contains 4,993 single-variant deletions across the 15 traits. Every deletion retained the sign of the corresponding primary IVW estimate and remained nominally significant. The released table is trait-level and contains no SNP identifiers.
 

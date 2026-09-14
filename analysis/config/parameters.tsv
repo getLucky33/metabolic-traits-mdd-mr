@@ -12,7 +12,11 @@ family_size	249	primary and reverse MR	Bonferroni family fixed before analysis
 presso_screen_nb	1000	MR-PRESSO	Full-trait screening only
 presso_candidate_nb	10000	MR-PRESSO	Formal candidate rerun minimum
 presso_seed	20260815	MR-PRESSO	Fixed seed
+presso_candidate_workers	4	MR-PRESSO	Parallel workers used for the formal 15-candidate rerun
 steiger_prevalence_grid	0.08,0.15,0.20	Steiger	MDD prevalence sensitivity values
+steiger_exposure_n_mode	source_variant_specific	Steiger	Per-variant sample size retained from the matching meta_EUR source row
+steiger_exposure_n_observed	413897,599249	Steiger	Sample-size values observed across the 15 formal candidates
+steiger_recovery_workers	4	Steiger sample-size recovery	Compressed source files processed concurrently; each source is streamed once
 broad_pleiotropy_definition	>5 traits	robustness	Variant used as an instrument for more than five metabolic traits
 coloc_p1	1e-4	colocalisation	Prior probability that a variant affects trait 1
 coloc_p2	1e-4	colocalisation	Prior probability that a variant affects trait 2

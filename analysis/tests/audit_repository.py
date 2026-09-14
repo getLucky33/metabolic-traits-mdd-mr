@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+from statistics import NormalDist
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -65,11 +66,28 @@ def read_tsv(name: str) -> list[dict[str, str]]:
         return list(csv.DictReader(handle, delimiter="\t"))
 
 
+def tsv_header(name: str) -> list[str]:
+    with (ROOT / "data" / "derived" / name).open(encoding="utf-8", newline="") as handle:
+        return next(csv.reader(handle, delimiter="\t"))
+
+
 def counts(rows: list[dict[str, str]], field: str) -> dict[str, int]:
     out: dict[str, int] = {}
     for row in rows:
         out[row[field]] = out.get(row[field], 0) + 1
     return out
+
+
+def student_t_critical_975(degrees_freedom: int) -> float:
+    z = NormalDist().inv_cdf(0.975)
+    inverse_df = 1.0 / degrees_freedom
+    return (
+        z
+        + (z**3 + z) * inverse_df / 4
+        + (5 * z**5 + 16 * z**3 + 3 * z) * inverse_df**2 / 96
+        + (3 * z**7 + 19 * z**5 + 17 * z**3 - 15 * z) * inverse_df**3 / 384
+        + (79 * z**9 + 776 * z**7 + 1482 * z**5 - 1920 * z**3 - 945 * z) * inverse_df**4 / 92160
+    )
 
 
 manifest_rows = read_tsv("data_manifest.tsv")
@@ -101,30 +119,33 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.16" not in description or "version: 0.2.16" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.16")
+if "Version: 0.2.17" not in description or "version: 0.2.17" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.17")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
 verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if ("Version 0.2.16" not in readme or
-        "Release v0.2.16" not in workflow or
-        "## v0.2.16 release verification" not in verification):
+if ("Version 0.2.17" not in readme or
+        "Release v0.2.17" not in workflow or
+        "## v0.2.17 release verification" not in verification):
     errors.append("release version is not synchronized across repository documentation")
 for rel in (
     "DATA_SOURCES.md",
     "analysis/config/local_paths.example.tsv",
     "analysis/manifests/metabolic_traits_249.tsv",
     "analysis/prepare_inputs.py",
+    "analysis/scripts/05a_recover_exposure_variant_n.py",
+    "analysis/tests/test_exposure_variant_n.py",
 ):
     if not (ROOT / rel).is_file():
         errors.append(f"reproduction-entry file is missing: {rel}")
+catalog: list[dict[str, str]] = []
 catalog_file = ROOT / "analysis" / "manifests" / "metabolic_traits_249.tsv"
 if catalog_file.is_file():
     if hashlib.sha256(catalog_file.read_bytes()).hexdigest() != "4edabd80342a07dc0ab766f65d84d4cce6a1335a668ce10c77088a42021ea719":
-        errors.append("metabolic accession-to-trait mapping differs from the verified v0.2.16 catalog")
+        errors.append("metabolic accession-to-trait mapping differs from the verified catalog")
     with catalog_file.open(encoding="utf-8", newline="") as handle:
         catalog = list(csv.DictReader(handle, delimiter="\t"))
     expected_accessions = [f"GCST{number}" for number in range(90451106, 90451355)]
@@ -203,15 +224,46 @@ for forbidden_edge in ('"  RV --> C"', '"  RM --> R"', '"  RM --> L"', '"  F -->
         errors.append(f"Figure 1 contains a forbidden topology edge: {forbidden_edge}")
 if "stage_label" in figure_script or "grid.circle" in figure_script:
     errors.append("Figure 1 must use unnumbered stage headings without circular badges")
-attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-07 for the exact current release schemas and publication boundary stated in this file."
-if attestation not in access or "attestation remains pending" in readme or "attestation remains pending" in access:
-    errors.append("responsible-author release-scope attestation is missing or still marked pending")
+attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact v0.2.17 aggregate release schemas and publication boundary stated in this file."
+if attestation not in access:
+    errors.append("responsible-author v0.2.17 release-scope attestation is missing")
+manifest_sha256 = hashlib.sha256(
+    (ROOT / "data" / "derived" / "data_manifest.tsv").read_bytes()
+).hexdigest()
+if f"`{manifest_sha256}`" not in access:
+    errors.append("ACCESS.md attested manifest snapshot does not match data_manifest.tsv")
+transition_markers = (
+    "OPEN" + "/PENDING",
+    "subject to renewed responsible-author approval",
+    "Pending v0.2.17",
+)
+for name, document in (
+        ("README.md", readme), ("analysis/WORKFLOW.md", workflow),
+        ("analysis/VERIFICATION.md", verification), ("data/ACCESS.md", access)):
+    if any(marker in document for marker in transition_markers):
+        errors.append(f"transitional release-gate wording remains in {name}")
+
+variant_n_script = (ROOT / "analysis" / "scripts" / "05a_recover_exposure_variant_n.py").read_text(encoding="utf-8")
+for marker in ("--exposure-manifest", "--iv-manifest", "--out", "--qc-out",
+               "--traits", "--workers", "--max-n", "gzip.open", "ProcessPoolExecutor"):
+    if marker not in variant_n_script:
+        errors.append(f"portable variant-N script is missing required behavior: {marker}")
+if re.search(r"(?i)[A-Z]:[\\/]", variant_n_script):
+    errors.append("portable variant-N script contains a machine-specific path")
+prepare_script = (ROOT / "analysis" / "prepare_inputs.py").read_text(encoding="utf-8")
+if not re.search(r'METABOLIC_COLUMNS\s*=\s*\{[^}]*["\']n["\']', prepare_script, re.S):
+    errors.append("source preflight must require the metabolic GWAS n field")
+robustness_script = (ROOT / "analysis" / "scripts" / "05_run_robustness.R").read_text(encoding="utf-8")
+if ("Formal robustness mode requires --exposure-n-file" not in robustness_script or
+        "source_variant_specific" not in robustness_script or
+        re.search(r'arg_value\(args,\s*"exposure-n"', robustness_script)):
+    errors.append("formal robustness code must require source-variant exposure N without a fixed-N fallback")
 
 lock = json.loads((ROOT / "renv.lock").read_text(encoding="utf-8"))
 locked = lock.get("Packages", {})
 required_roots = {
     "data.table", "ggplot2", "patchwork", "scales", "MendelianRandomization",
-    "ieugwasr", "coloc", "future", "future.apply", "TwoSampleMR", "MRPRESSO",
+    "ieugwasr", "coloc", "future", "future.apply", "TwoSampleMR", "MRPRESSO", "psych",
 }
 if len(locked) < 100 or not required_roots.issubset(locked):
     errors.append("renv.lock does not contain the verified hard-dependency closure")
@@ -408,12 +460,62 @@ if len(loo) == 15:
     if sum(int(row["n_leave_one_out_estimates"]) for row in loo) != 4993:
         errors.append("leave-one-out summary must contain 4,993 single-variant deletions")
 
+expected_presso_header = [
+    "trait_id", "trait_display", "n_iv", "presso_global_p", "presso_outlier_n",
+    "presso_distortion_p", "presso_raw_b", "presso_raw_se", "presso_raw_df",
+    "presso_raw_ci_lo", "presso_raw_ci_hi", "presso_raw_p", "presso_corrected_b",
+    "presso_corrected_se", "presso_corrected_df", "presso_corrected_ci_lo",
+    "presso_corrected_ci_hi", "presso_corrected_p", "presso_nb", "presso_seed",
+    "presso_se_status", "presso_global_p_display", "presso_global_rssobs",
+    "presso_global_exceedance_n", "presso_distortion_p_display",
+    "presso_distortion_coefficient", "presso_raw_t_stat", "presso_corrected_t_stat",
+    "presso_regression_p_sidedness", "presso_empirical_test_df",
+]
 presso = read_tsv("presso_sensitivity_15.tsv")
-if len(presso) != 15 or len({row["trait_id"] for row in presso}) != 15 or any(
-        row["presso_raw_se"] != "NA" or row["presso_corrected_se"] != "NA" for row in presso):
-    errors.append("frozen MR-PRESSO SE fields must remain NA until the 10,000-run objects are rerun")
-if any("not reconstructed from P values" not in row["presso_se_status"] for row in presso):
-    errors.append("MR-PRESSO NA reason must prohibit reconstruction from P values")
+if tsv_header("presso_sensitivity_15.tsv") != expected_presso_header:
+    errors.append("MR-PRESSO sensitivity table schema or column order has drifted")
+if (len(presso) != 15 or len({row["trait_id"] for row in presso}) != 15 or
+        {row["trait_id"] for row in presso} != set(candidate_order)):
+    errors.append("MR-PRESSO sensitivity table must contain the 15 frozen candidates")
+for row in presso:
+    try:
+        n_iv = int(row["n_iv"])
+        outlier_n = int(row["presso_outlier_n"])
+        if (row["trait_display"] != labels_by_trait.get(row["trait_id"]) or
+                row["presso_nb"] != "10000" or row["presso_seed"] != "20260815"):
+            raise ValueError("simulation metadata mismatch")
+        for prefix, expected_df in (
+                ("presso_raw", n_iv - 1),
+                ("presso_corrected", n_iv - outlier_n - 1)):
+            estimate = float(row[f"{prefix}_b"])
+            se = float(row[f"{prefix}_se"])
+            degrees_freedom = int(row[f"{prefix}_df"])
+            lower = float(row[f"{prefix}_ci_lo"])
+            upper = float(row[f"{prefix}_ci_hi"])
+            if se <= 0 or degrees_freedom != expected_df:
+                raise ValueError("invalid SE or residual degrees of freedom")
+            critical = student_t_critical_975(degrees_freedom)
+            tolerance = max(1e-10, abs(estimate) * 1e-8, abs(se) * 1e-8)
+            if (abs(lower - (estimate - critical * se)) > tolerance or
+                    abs(upper - (estimate + critical * se)) > tolerance):
+                raise ValueError("confidence interval mismatch")
+            if not math.isclose(float(row[f"{prefix}_t_stat"]), estimate / se,
+                                rel_tol=1e-12, abs_tol=1e-12):
+                raise ValueError("t statistic mismatch")
+        if (row["presso_global_p_display"] != "<1e-04" or
+                row["presso_global_exceedance_n"] != "0" or
+                row["presso_distortion_p_display"] != row["presso_distortion_p"] or
+                row["presso_regression_p_sidedness"] != "two-sided" or
+                row["presso_empirical_test_df"] != "not_applicable" or
+                not math.isfinite(float(row["presso_global_rssobs"])) or
+                float(row["presso_global_rssobs"]) <= 0 or
+                not math.isfinite(float(row["presso_distortion_coefficient"]))):
+            raise ValueError("saved-object test metadata mismatch")
+    except (KeyError, TypeError, ValueError):
+        errors.append(f"MR-PRESSO uncertainty fields are invalid: {row.get('trait_id', '<missing>')}")
+if any("directly" not in row["presso_se_status"].lower() or
+       "not reconstructed from P values" not in row["presso_se_status"] for row in presso):
+    errors.append("MR-PRESSO SE/CI provenance must identify direct Sd retention and prohibit P-value reconstruction")
 if len(presso) == 15:
     if (sum(math.isclose(float(row["presso_global_p"]), 1e-4, rel_tol=0, abs_tol=1e-12) for row in presso) != 15 or
             min(int(row["presso_outlier_n"]) for row in presso) != 7 or
@@ -421,6 +523,96 @@ if len(presso) == 15:
             sum(float(row["presso_distortion_p"]) >= 0.05 for row in presso) != 13 or
             sum(float(row["presso_distortion_p"]) < 0.05 for row in presso) != 2):
         errors.append("MR-PRESSO global P values, outlier counts or 13/2 distortion split differ from the frozen results")
+
+steiger_header = [
+    "trait_id", "trait_display", "source_accession", "n_iv_full",
+    "n_iv_pleio_removed", "exposure_n_mode", "exposure_n_min", "exposure_n_max",
+    "exposure_n_unique", "steiger_correct_008", "steiger_p_008", "steiger_z_008",
+    "steiger_log10_p_008", "steiger_correct_015", "steiger_p_015", "steiger_z_015",
+    "steiger_log10_p_015", "steiger_correct_020", "steiger_p_020", "steiger_z_020",
+    "steiger_log10_p_020", "steiger_test_distribution", "steiger_p_sidedness",
+    "steiger_df", "steiger_p_display", "r2_exposure", "r2_outcome",
+]
+qc_header = [
+    "trait_id", "trait_display", "source_accession", "target_iv_n", "matched_iv_n",
+    "missing_iv_n", "exposure_n_min", "exposure_n_max", "exposure_n_unique",
+    "exposure_n_values", "source_rows_scanned", "compressed_bytes_read", "elapsed_seconds",
+]
+steiger = read_tsv("steiger_directionality_15.tsv")
+sample_qc = read_tsv("exposure_sample_size_qc_15.tsv")
+if tsv_header("steiger_directionality_15.tsv") != steiger_header:
+    errors.append("Steiger directionality table schema or column order has drifted")
+if tsv_header("exposure_sample_size_qc_15.tsv") != qc_header:
+    errors.append("exposure sample-size QC table schema or column order has drifted")
+for name, rows in (("steiger_directionality_15.tsv", steiger),
+                   ("exposure_sample_size_qc_15.tsv", sample_qc)):
+    forbidden_columns = {"rsid", "variant_id", "source_gwas_file", "source_file", "iv_file"}
+    if forbidden_columns.intersection(tsv_header(name)):
+        errors.append(f"candidate-level release contains a variant/path column: {name}")
+    values = "\n".join(value for row in rows for value in row.values())
+    if re.search(r"(?i)(?:[A-Z]:[\\/]|/(?:home|Users|mnt|tmp)/)", values):
+        errors.append(f"candidate-level release contains a local path: {name}")
+if ([row.get("trait_id") for row in steiger] != candidate_order or
+        [row.get("trait_id") for row in sample_qc] != candidate_order):
+    errors.append("Steiger and sample-size QC tables must contain the 15 candidates in frozen order")
+accession_by_trait = {row["trait"]: row["accession"] for row in catalog}
+presso_by_trait = {row["trait_id"]: row for row in presso}
+steiger_by_trait = {row["trait_id"]: row for row in steiger}
+for row in steiger:
+    trait = row.get("trait_id", "<missing>")
+    try:
+        n_full = int(row["n_iv_full"])
+        n_removed = int(row["n_iv_pleio_removed"])
+        n_min, n_max = int(row["exposure_n_min"]), int(row["exposure_n_max"])
+        n_unique = int(row["exposure_n_unique"])
+        r2_exposure, r2_outcome = float(row["r2_exposure"]), float(row["r2_outcome"])
+        if (row["trait_display"] != labels_by_trait.get(trait) or
+                row["source_accession"] != accession_by_trait.get(trait) or
+                n_full != int(presso_by_trait[trait]["n_iv"]) or
+                not 0 < n_removed < n_full or
+                row["exposure_n_mode"] != "source_variant_specific" or
+                n_min not in {413897, 599249} or n_max != 599249 or
+                n_unique != (1 if n_min == n_max else 2) or
+                row["steiger_test_distribution"] != "standard_normal" or
+                row["steiger_p_sidedness"] != "two-sided" or
+                row["steiger_df"] != "not_applicable" or
+                row["steiger_p_display"] != "P<1e-300 (double-precision underflow; see log10 P)" or
+                not (math.isfinite(r2_exposure) and math.isfinite(r2_outcome) and
+                     r2_exposure > r2_outcome > 0)):
+            raise ValueError("metadata or aggregate mismatch")
+        for suffix in ("008", "015", "020"):
+            if (row[f"steiger_correct_{suffix}"] != "1" or
+                    float(row[f"steiger_p_{suffix}"]) != 0 or
+                    not math.isfinite(float(row[f"steiger_z_{suffix}"])) or
+                    float(row[f"steiger_z_{suffix}"]) <= 0 or
+                    not math.isfinite(float(row[f"steiger_log10_p_{suffix}"])) or
+                    float(row[f"steiger_log10_p_{suffix}"]) >= -300):
+                raise ValueError("directionality result mismatch")
+    except (KeyError, TypeError, ValueError):
+        errors.append(f"Steiger candidate-level assertion failed: {trait}")
+for row in sample_qc:
+    trait = row.get("trait_id", "<missing>")
+    try:
+        target, matched, missing = (int(row[name]) for name in
+                                    ("target_iv_n", "matched_iv_n", "missing_iv_n"))
+        if (row["trait_display"] != labels_by_trait.get(trait) or
+                row["source_accession"] != accession_by_trait.get(trait) or
+                target != matched or missing != 0 or
+                target < int(steiger_by_trait[trait]["n_iv_full"]) or
+                row["exposure_n_min"] != "413897" or
+                row["exposure_n_max"] != "599249" or
+                row["exposure_n_unique"] != "2" or
+                row["exposure_n_values"] != "413897;599249" or
+                int(row["source_rows_scanned"]) <= 0 or
+                int(row["compressed_bytes_read"]) <= 0 or
+                float(row["elapsed_seconds"]) <= 0):
+            raise ValueError("sample-size recovery mismatch")
+    except (KeyError, TypeError, ValueError):
+        errors.append(f"exposure sample-size QC assertion failed: {trait}")
+if (sum(int(row["target_iv_n"]) for row in sample_qc) != 5665 or
+        sum(int(row["matched_iv_n"]) for row in sample_qc) != 5665 or
+        sum(int(row["missing_iv_n"]) for row in sample_qc) != 0):
+    errors.append("exposure sample-size recovery totals must be 5,665/5,665 with zero missing")
 
 for name, expected_rows in (
     ("susie_exploratory_summary.tsv", 44),

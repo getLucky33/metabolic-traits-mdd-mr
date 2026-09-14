@@ -6,7 +6,7 @@ The repository does not download or redistribute third-party GWAS or reference f
 
 | Source | Exact version or identifier | Build | Suggested local location | Used for |
 | --- | --- | --- | --- | --- |
-| Circulating metabolic traits | Tambets `meta_EUR`, GCST90451106–GCST90451354; the complete accession-to-trait table is [`analysis/manifests/metabolic_traits_249.tsv`](analysis/manifests/metabolic_traits_249.tsv) | GRCh38 | `data-local/metabolite/`; retain each filename as `<accession>.tsv.gz` | Instrument selection, reverse MR outcomes and exposure-side colocalization |
+| Circulating metabolic traits | Tambets `meta_EUR`, GCST90451106–GCST90451354; the complete accession-to-trait table is [`analysis/manifests/metabolic_traits_249.tsv`](analysis/manifests/metabolic_traits_249.tsv) | GRCh38 | `data-local/metabolite/`; retain each filename as `<accession>.tsv.gz` | Instrument selection, reverse MR outcomes, Steiger sample-size recovery and exposure-side colocalization |
 | PGC major depression | MDD2025 Figshare v5, main file [`daner_pgc_mdd_no23andMe_eur_hg19_v3.49.24.11.neff.gz`](https://ndownloader.figshare.com/files/52371878) | GRCh37 | `data-local/mdd/` | Primary forward MR and primary reverse-MR instruments |
 | PGC major depression excluding UK Biobank | MDD2025 Figshare v5, sensitivity file [`daner_pgc_mdd_no23andMe-noUKBB_eur_hg19_v3.49.24.11.neff.gz`](https://ndownloader.figshare.com/files/52371881) | GRCh37 | `data-local/mdd/` | Sample-overlap sensitivity analysis and second reverse-MR instrument set |
 | FinnGen depression | Data Freeze 13, endpoint `F5_DEPRESSIO`, file [`finngen_R13_F5_DEPRESSIO.gz`](https://storage.googleapis.com/finngen-public-data-r13/summary_stats/finngen_R13_F5_DEPRESSIO.gz) | GRCh38 | `data-local/finngen/` | Alternative-outcome comparison for the 15 forward candidates |
@@ -17,7 +17,7 @@ The metabolic-trait files can be downloaded from the URLs in the 249-row accessi
 
 ## Required source schemas
 
-- Metabolic GWAS: `variant_id`, `effect_allele`, `other_allele`, `beta`, `standard_error`, `effect_allele_frequency` and `neg_log_10_p_value`.
+- Metabolic GWAS: `variant_id`, `effect_allele`, `other_allele`, `beta`, `standard_error`, `effect_allele_frequency`, `neg_log_10_p_value` and `n`.
 - PGC files: `CHR`, `BP`, `SNP`, `A1`, `A2`, `OR`, `SE`, `P`, `Nca`, `Nco`, and dataset-specific `FRQ_A_*` and `FRQ_U_*` columns.
 - FinnGen R13: `#chrom`, `pos`, `ref`, `alt`, `rsids`, `nearest_genes`, `pval`, `mlogp`, `beta`, `sebeta`, `af_alt`, `af_alt_cases` and `af_alt_controls`, in that order.
 - Metabolic rsID maps: `variant_id`, `rsid` and `rsid_status`; only rows labelled `matched` are admitted.
@@ -28,9 +28,10 @@ Downloading the six source groups above is necessary but not sufficient for ever
 
 1. Instrument selection requires one dbSNP-derived rsID map per metabolic trait in the configured `rsid_map_dir`. The preflight accepts `<trait>_rsid_map.tsv` or the frozen-project convention `<trait>_forward_ivs_rsid_b157.tsv`. The current public repository validates and consumes these maps but does not regenerate the complete frozen mapping set.
 2. Reverse-MR extraction requires the selected MDD instruments and either a prepared GRCh38 coordinate map or `bcftools` plus the indexed dbSNP build 157 file.
-3. Locus construction requires the complete forward screen, the 249-trait IV manifest, two MDD coordinate tables and the recorded reverse-tier table.
-4. ABF colocalization requires the locus manifest, regional metabolic files, both regional PGC outcome files and their sample metadata. The scripts record failed or incomplete loci rather than silently dropping them.
-5. The released integrated-evidence and exploratory SuSiE tables are audit snapshots. Independent recomputation requires regional association data, LD matrices and credible-set inputs that are not redistributed.
+3. Steiger analysis requires the source `n` value for every candidate IV. `05a_recover_exposure_variant_n.py` streams each selected gzip source once and fails on missing, duplicate, non-positive or above-maximum values; its SNP-level output remains local.
+4. Locus construction requires the complete forward screen, the 249-trait IV manifest, two MDD coordinate tables and the recorded reverse-tier table. The reverse-tier rule adds MDD seeds for 13 candidates and retains forward-only seeding for the remaining 2 candidates.
+5. ABF colocalization requires the locus manifest, regional metabolic files, both regional PGC outcome files and their sample metadata. The scripts record failed or incomplete loci rather than silently dropping them.
+6. The released integrated-evidence and exploratory SuSiE tables are audit snapshots. Independent recomputation requires regional association data, LD matrices and credible-set inputs that are not redistributed.
 
 ## Before running an analysis
 

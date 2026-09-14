@@ -1,8 +1,8 @@
 # Data access and redistribution boundary
 
-The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value; it contains no variant-level fields. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. The provider terms and current release schemas were checked on 2026-09-07. Zhouyi Wang confirmed the responsible-author attestation below for the release schemas and publication boundary. Operational download and prepared-input requirements are listed in [`DATA_SOURCES.md`](../DATA_SOURCES.md).
+The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value. `presso_sensitivity_15.tsv`, `steiger_directionality_15.tsv` and `exposure_sample_size_qc_15.tsv` contain candidate-level summaries without variant identifiers or local paths. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. Provider terms were reviewed on 2026-09-07, and the v0.2.17 aggregate schemas and publication boundary were checked on 2026-09-14. Operational download and prepared-input requirements are listed in [`DATA_SOURCES.md`](../DATA_SOURCES.md).
 
-## Verification status (checked 2026-09-07)
+## Verification status (checked 2026-09-14)
 
 | Provider/source | Evidence status | Repository release rule |
 |---|---|---|
@@ -12,13 +12,13 @@ The files under `data/derived/` are compact, author-created aggregate reporting 
 
 **Provider-terms review:** VERIFIED.
 
-**Technical release boundary:** VERIFIED for the current schemas.
+**Technical release boundary:** VERIFIED for v0.2.17.
 
-**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-07 for the exact current release schemas and publication boundary stated in this file.
+**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact v0.2.17 aggregate release schemas and publication boundary stated in this file.
 
 > 我确认本仓库仅公开作者生成的位点级与先验敏感性聚合结果，不含 PGC 或 FinnGen 原始、区域或可还原的 SNP 级汇总统计；本项目通过官方渠道获取并接受适用条款，用途为非商业科学研究，已履行不识别、引用与 FinnGen 致谢要求，并同意按 ACCESS.md 所列边界公开。
 
-**Attested aggregate-manifest snapshot:** `data/derived/data_manifest.tsv`, SHA-256 `da0db54ea80e4b54cae7b433d6660449b2559cae59f7f88c2414ffd28faeafe4`.
+**Attested aggregate-manifest snapshot:** `data/derived/data_manifest.tsv`, SHA-256 `266c405abb30170a53de3d5612a32f66c3144a586e8a3383d619db2076742f37`.
 
 **Blanket upstream redistribution clearance:** NOT CLAIMED.
 

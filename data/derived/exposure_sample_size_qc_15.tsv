@@ -1,0 +1,16 @@
+trait_id	trait_display	source_accession	target_iv_n	matched_iv_n	missing_iv_n	exposure_n_min	exposure_n_max	exposure_n_unique	exposure_n_values	source_rows_scanned	compressed_bytes_read	elapsed_seconds
+Ratio_of_monounsaturated_fatty_acids_to_total_fatty_acids	Monounsaturated fatty acids/total fatty acids ratio	GCST90451219	387	387	0	413897	599249	2	413897;599249	100775735	3522000016	105.766
+Ratio_of_polyunsaturated_fatty_acids_to_monounsaturated_fatty_acids	Polyunsaturated fatty acids/monounsaturated fatty acids ratio	GCST90451242	361	361	0	413897	599249	2	413897;599249	100775735	3522174291	104.739
+GlycA	Glycoprotein acetyls	GCST90451123	381	381	0	413897	599249	2	413897;599249	100939839	3528520664	103.876
+Ratio_of_polyunsaturated_fatty_acids_to_total_fatty_acids	Polyunsaturated fatty acids/total fatty acids ratio	GCST90451243	304	304	0	413897	599249	2	413897;599249	100775851	3522570909	99.829
+Cholesteryl_esters_to_total_lipids_ratio_in_very_small_VLDL	Cholesteryl esters/total lipids ratio in very small very-low-density lipoprotein	GCST90451331	399	399	0	413897	599249	2	413897;599249	100775735	3521395034	102.029
+Triglycerides_to_total_lipids_ratio_in_very_large_HDL	Triglycerides/total lipids ratio in very large high-density lipoprotein	GCST90451317	416	416	0	413897	599249	2	413897;599249	100774604	3521442112	99.543
+Cholesterol_to_total_lipids_ratio_in_large_HDL	Cholesterol/total lipids ratio in large high-density lipoprotein	GCST90451161	450	450	0	413897	599249	2	413897;599249	100451855	3510184364	105.252
+Cholesterol_in_very_large_HDL	Cholesterol in very large high-density lipoprotein	GCST90451310	455	455	0	413897	599249	2	413897;599249	100670848	3516723499	105.273
+Monounsaturated_fatty_acids	Monounsaturated fatty acids	GCST90451220	336	336	0	413897	599249	2	413897;599249	100775503	3522729541	105.030
+Cholesterol_to_total_lipids_ratio_in_very_large_VLDL	Cholesterol/total lipids ratio in very large very-low-density lipoprotein	GCST90451321	316	316	0	413897	599249	2	413897;599249	100670641	3518397972	104.769
+Triglycerides_to_total_lipids_ratio_in_very_small_VLDL	Triglycerides/total lipids ratio in very small very-low-density lipoprotein	GCST90451341	384	384	0	413897	599249	2	413897;599249	100775735	3521627395	98.318
+Cholesterol_to_total_lipids_ratio_in_medium_VLDL	Cholesterol/total lipids ratio in medium very-low-density lipoprotein	GCST90451223	372	372	0	413897	599249	2	413897;599249	100433113	3509685362	104.200
+Free_cholesterol_in_very_large_HDL	Free cholesterol in very large high-density lipoprotein	GCST90451312	377	377	0	413897	599249	2	413897;599249	100939839	3526915609	102.979
+Cholesteryl_esters_to_total_lipids_ratio_in_medium_VLDL	Cholesteryl esters/total lipids ratio in medium very-low-density lipoprotein	GCST90451221	385	385	0	413897	599249	2	413897;599249	100774604	3521557306	102.785
+Free_cholesterol_to_total_lipids_ratio_in_medium_VLDL	Free cholesterol/total lipids ratio in medium very-low-density lipoprotein	GCST90451225	342	342	0	413897	599249	2	413897;599249	100670646	3518224101	102.319
