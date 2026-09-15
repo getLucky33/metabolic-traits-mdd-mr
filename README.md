@@ -2,17 +2,17 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.17 adds complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for the Steiger sensitivity analysis.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.18 adds deterministic, allele-validated generation of the 249 exposure `variant_id`-to-rsID maps from the downloaded meta_EUR files and dbSNP build 157. Released aggregate results are unchanged.
 
 ## Choose a reproduction target
 
 | Target | What can be reproduced | Additional inputs |
 | --- | --- | --- |
 | Clean-clone verification | Figures 1–4, the complete 249-trait screen counts, the frozen 6,434-record colocalization classification and synthetic method checks | None beyond the recorded software environment |
-| Prepared-input analysis | Instrument selection, forward and reverse MR, sensitivity analyses, the FinnGen alternative-outcome comparison, locus construction, ABF colocalization and classification | Third-party GWAS, LD and dbSNP resources plus the prepared inputs listed in [`DATA_SOURCES.md`](DATA_SOURCES.md) |
+| Prepared-input analysis | Exposure rsID mapping, instrument selection, forward and reverse MR, sensitivity analyses, the FinnGen alternative-outcome comparison, locus construction, ABF colocalization and classification | Third-party GWAS, LD and dbSNP resources plus the remaining prepared inputs listed in [`DATA_SOURCES.md`](DATA_SOURCES.md) |
 | Aggregate-result audit only | The 101-row integrated-evidence table and exploratory SuSiE status, binding and stopping summaries | Independent recomputation is not possible from the released files alone |
 
-This is not a one-command raw-data-to-paper repository. Downloading the public GWAS files alone is insufficient: the prepared-input stages also require dbSNP-derived rsID maps, selected MDD instruments, coordinate tables and regional inputs. The exact boundary is stated before the commands so that a successful figure build is not mistaken for a complete numerical rerun.
+This is not a one-command raw-data-to-paper repository. Exposure rsID maps can now be generated locally, but later stages still require selected MDD instruments, coordinate tables and regional inputs. The exact boundary is stated before the commands so that a successful figure build is not mistaken for a complete numerical rerun.
 
 ## Start here for a real-data rerun
 
@@ -27,7 +27,22 @@ python analysis/prepare_inputs.py check \
   --level sources
 ```
 
-After preparing all 249 dbSNP-derived rsID maps, validate the analysis-ready inputs and build the complete local manifests:
+Generate one map first as the required real-data smoke test. The script reads that GWAS once, verifies the frozen dbSNP build-157 MD5, queries indexed positions and writes allele-matching QC. Check the observed row count, status counts and runtime before removing `--traits` for the complete 249-trait run.
+
+```bash
+python analysis/scripts/00_map_exposure_rsids.py \
+  --config analysis/config/local_paths.local.tsv \
+  --traits Cholesterol_in_very_large_HDL \
+  --out-dir data-local/rsid-smoke
+
+python analysis/scripts/00_map_exposure_rsids.py \
+  --config analysis/config/local_paths.local.tsv \
+  --out-dir data-local/maps
+```
+
+The mapping stage admits the genome-wide-significant (`P<5×10⁻⁸`) source rows as an upstream superset. The MAF-aware common/rare thresholds remain in instrument selection. Full runs process eight traits per indexed dbSNP query by default, so each source GWAS is streamed once without retaining all 249 traits in memory.
+
+After the maps exist, validate the analysis-ready inputs and build the complete local manifests:
 
 ```bash
 python analysis/prepare_inputs.py check \
@@ -68,6 +83,7 @@ The complete accession-to-trait mapping is released in `analysis/manifests/metab
 The released code covers:
 
 - MAF-aware metabolic-trait instrument selection and local PLINK clumping;
+- deterministic GRCh38 exposure `variant_id`-to-rsID mapping against dbSNP build 157 using exact unordered allele-pair matching;
 - MDD instrument selection for reverse MR;
 - main and UK Biobank-excluded MDD harmonization with action 2, plus action 3 palindrome removal;
 - random-effects IVW, MR-Egger, weighted-median and mode estimators;
@@ -103,7 +119,7 @@ Released audit tables include:
 
 These tables permit auditing of the reported results. Recomputing the integrated-evidence and SuSiE stages still requires unreleased regional data, LD matrices and author credible-set inputs.
 
-In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the v0.2.17 aggregate-only schema boundary are recorded in `data/ACCESS.md`; Zhouyi Wang confirmed the responsible-author attestation for this release boundary on 2026-09-14.
+In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the unchanged aggregate-only schema boundary are recorded in `data/ACCESS.md`; Zhouyi Wang confirmed the responsible-author attestation for this boundary on 2026-09-14. Version 0.2.18 changes code and documentation only.
 
 The FinnGen analysis is a cross-outcome comparison, not an independent replication of the PGC major-depression phenotype. Directional concordance does not establish a shared causal mechanism. The single-variant ABF model is not a substitute for multi-signal fine-mapping.
 

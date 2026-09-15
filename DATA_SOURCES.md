@@ -26,7 +26,7 @@ The metabolic-trait files can be downloaded from the URLs in the 249-row accessi
 
 Downloading the six source groups above is necessary but not sufficient for every analysis stage.
 
-1. Instrument selection requires one dbSNP-derived rsID map per metabolic trait in the configured `rsid_map_dir`. The preflight accepts `<trait>_rsid_map.tsv` or the frozen-project convention `<trait>_forward_ivs_rsid_b157.tsv`. The current public repository validates and consumes these maps but does not regenerate the complete frozen mapping set.
+1. Instrument selection requires one dbSNP-derived rsID map per metabolic trait in the configured `rsid_map_dir`. `00_map_exposure_rsids.py` now generates `<trait>_rsid_map.tsv` directly from the downloaded meta_EUR source files and the fixed dbSNP build-157 archive. It first retains the `P<5×10⁻⁸` source rows as an upstream mapping superset, then requires a unique GRCh38 position and unordered allele-pair match for `matched` status. The preflight also accepts the frozen-project filename `<trait>_forward_ivs_rsid_b157.tsv`.
 2. Reverse-MR extraction requires the selected MDD instruments and either a prepared GRCh38 coordinate map or `bcftools` plus the indexed dbSNP build 157 file.
 3. Steiger analysis requires the source `n` value for every candidate IV. `05a_recover_exposure_variant_n.py` streams each selected gzip source once and fails on missing, duplicate, non-positive or above-maximum values; its SNP-level output remains local.
 4. Locus construction requires the complete forward screen, the 249-trait IV manifest, two MDD coordinate tables and the recorded reverse-tier table. The reverse-tier rule adds MDD seeds for 13 candidates and retains forward-only seeding for the remaining 2 candidates.
@@ -42,7 +42,20 @@ cp analysis/config/local_paths.example.tsv analysis/config/local_paths.local.tsv
 python analysis/prepare_inputs.py check --config analysis/config/local_paths.local.tsv --level sources
 ```
 
-The `sources` check verifies the 249 accession set, file uniqueness, headers, the two PGC files, FinnGen, the PLINK LD prefix, dbSNP and its index. Once the 249 rsID maps have been prepared, run:
+The `sources` check verifies the 249 accession set, file uniqueness, headers, the two PGC files, FinnGen, the PLINK LD prefix, dbSNP and its index. Generate and inspect one rsID map before the full run:
+
+```bash
+python analysis/scripts/00_map_exposure_rsids.py \
+  --config analysis/config/local_paths.local.tsv \
+  --traits Cholesterol_in_very_large_HDL \
+  --out-dir data-local/rsid-smoke
+
+python analysis/scripts/00_map_exposure_rsids.py \
+  --config analysis/config/local_paths.local.tsv \
+  --out-dir data-local/maps
+```
+
+The mapper verifies the archived dbSNP file against MD5 `6a6f313e92a39c337571174dad12cfe1`. It writes one three-column map per trait, `exposure_rsid_mapping_qc.tsv` and `exposure_rsid_mapping_run.json`. It reads each compressed metabolic source once and uses indexed dbSNP queries in bounded trait batches. Once all 249 maps exist, run:
 
 ```bash
 python analysis/prepare_inputs.py check --config analysis/config/local_paths.local.tsv --level analysis

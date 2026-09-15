@@ -1,6 +1,6 @@
 # Data access and redistribution boundary
 
-The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value. `presso_sensitivity_15.tsv`, `steiger_directionality_15.tsv` and `exposure_sample_size_qc_15.tsv` contain candidate-level summaries without variant identifiers or local paths. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. Provider terms were reviewed on 2026-09-07, and the v0.2.17 aggregate schemas and publication boundary were checked on 2026-09-14. Operational download and prepared-input requirements are listed in [`DATA_SOURCES.md`](../DATA_SOURCES.md).
+The files under `data/derived/` are compact, author-created aggregate reporting inputs. They do not contain participant-level data or original/regional GWAS association rows. `forward_noukbb_15.tsv` contains only candidate-level instrument counts and MR beta, standard error and P value. `presso_sensitivity_15.tsv`, `steiger_directionality_15.tsv` and `exposure_sample_size_qc_15.tsv` contain candidate-level summaries without variant identifiers or local paths. `coloc_locus_manifest.tsv` contains only locus-level lead rsID/position identifiers and author-defined window boundaries. Provider terms were reviewed on 2026-09-07, and the aggregate schemas and publication boundary were checked on 2026-09-14. Version 0.2.18 changes code and documentation only; the released aggregate payload is unchanged from v0.2.17. Operational download and prepared-input requirements are listed in [`DATA_SOURCES.md`](../DATA_SOURCES.md).
 
 ## Verification status (checked 2026-09-14)
 
@@ -12,9 +12,9 @@ The files under `data/derived/` are compact, author-created aggregate reporting 
 
 **Provider-terms review:** VERIFIED.
 
-**Technical release boundary:** VERIFIED for v0.2.17.
+**Technical release boundary:** VERIFIED for the unchanged aggregate payload carried forward to v0.2.18.
 
-**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact v0.2.17 aggregate release schemas and publication boundary stated in this file.
+**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact aggregate release schemas and publication boundary stated in this file. Version 0.2.18 does not change that payload or boundary.
 
 > 我确认本仓库仅公开作者生成的位点级与先验敏感性聚合结果，不含 PGC 或 FinnGen 原始、区域或可还原的 SNP 级汇总统计；本项目通过官方渠道获取并接受适用条款，用途为非商业科学研究，已履行不识别、引用与 FinnGen 致谢要求，并同意按 ACCESS.md 所列边界公开。
 

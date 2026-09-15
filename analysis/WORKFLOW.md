@@ -2,13 +2,13 @@
 
 Run all commands from the repository root. Paths are supplied only through command-line arguments or TSV manifests; the scripts contain no machine-specific data paths and never download or install packages at run time.
 
-Release v0.2.17 adds complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for the Steiger sensitivity analysis. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
+Release v0.2.18 adds deterministic generation and content validation of exposure rsID maps. Statistical results and released aggregate tables remain unchanged from v0.2.17. Figure 2 combines the complete 249-trait primary forward screen with the 15-trait, three-dataset forest plot; Figure 3 groups evidence by analytical role and labels its MR-PRESSO column as distortion-only; and Figure 4 separates the 101 shared-variant-support records into 14 robust and 87 prior-sensitive records before showing their integrated dispositions. Forward and reverse MR remain parallel direction-specific analyses with separately selected instruments. The 15-trait candidate set is selected only by the primary forward screen; matched reverse-MR estimates inform the directional assessment but do not enter the robustness or locus branches and are not interpreted as proof of reciprocal causality.
 
 ## 0. Establish the reproduction boundary
 
 Read `DATA_SOURCES.md`, copy `analysis/config/local_paths.example.tsv` to an ignored `.local.tsv` file and run `analysis/prepare_inputs.py check --level sources`. This checks all 249 accession files, the two PGC outcomes, FinnGen, the PLINK LD prefix and the indexed dbSNP resource without reading the complete GWAS bodies.
 
-The downloaded files are not yet analysis-ready. Instrument selection also requires one prepared `variant_id`-to-rsID map per metabolic trait. After those maps exist, run the `analysis` check and build the complete local manifests. The current repository consumes and validates the maps but does not regenerate the complete frozen mapping set.
+The downloaded files are not yet analysis-ready. Run the exposure rsID mapping stage below before the `analysis` check and local-manifest build. Later stages still require the prepared inputs listed in `DATA_SOURCES.md`.
 
 Do not describe the integrated-evidence or exploratory SuSiE tables as independently executable outputs. They remain released aggregate audit records because the necessary regional association data, LD matrices and credible-set inputs are not public.
 
@@ -16,7 +16,20 @@ Do not describe the integrated-evidence or exploratory SuSiE tables as independe
 
 Install R 4.5.1, PLINK 1.9 and bcftools 1.24. Restore the complete hard-dependency closure recorded in `renv.lock`; the GitHub packages are pinned to immutable commits. `analysis/environment/package-versions.tsv` records the principal analysis packages and command-line tools. Create `data-local/`; this directory is excluded by `.gitignore`.
 
-Use `analysis/prepare_inputs.py build-manifests` to create the complete local source and exposure manifests after the analysis-level preflight passes. Build the IV manifest from stage 1 outputs, and copy only the remaining outcome, locus and reverse-tier examples when those stages are reached. Keep trait identifiers stable across all manifests. Full journal-facing names are used only in tables and figures; analysis identifiers must not be renamed after the run is frozen.
+Use `analysis/prepare_inputs.py build-manifests` to create the complete local source and exposure manifests after the analysis-level preflight passes. Build the IV manifest from the instrument-selection outputs, and copy only the remaining outcome, locus and reverse-tier examples when those stages are reached. Keep trait identifiers stable across all manifests. Full journal-facing names are used only in tables and figures; analysis identifiers must not be renamed after the run is frozen.
+
+### Exposure rsID mapping
+
+Run one trait first and inspect `exposure_rsid_mapping_qc.tsv` before launching all 249 traits:
+
+```bash
+python analysis/scripts/00_map_exposure_rsids.py \
+  --config analysis/config/local_paths.local.tsv \
+  --traits Cholesterol_in_very_large_HDL \
+  --out-dir data-local/rsid-smoke
+```
+
+The mapper streams each selected meta_EUR file once, retains all source variants at `P<5×10⁻⁸`, and matches GRCh38 position plus the unordered exposure-allele pair against the fixed dbSNP build-157 archive. It reports `matched`, `ambiguous`, `no_allele_match`, `no_dbsnp_entry` and `skipped`; only a unique `matched` rsID is used downstream. Once the smoke output and runtime are plausible, omit `--traits` and write the full set to the `rsid_map_dir` configured in `local_paths.local.tsv`. The default eight-trait batches bound memory while avoiding one dbSNP process per trait.
 
 ## 2. Instrument selection
 

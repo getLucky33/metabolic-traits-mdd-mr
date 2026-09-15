@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import gzip
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -20,6 +21,9 @@ FINNGEN_COLUMNS = [
     "#chrom", "pos", "ref", "alt", "rsids", "nearest_genes", "pval", "mlogp",
     "beta", "sebeta", "af_alt", "af_alt_cases", "af_alt_controls",
 ]
+RSID_MAP_COLUMNS = {"variant_id", "rsid", "rsid_status"}
+RSID_STATUSES = {"matched", "ambiguous", "no_allele_match", "no_dbsnp_entry", "skipped"}
+RSID = re.compile(r"rs[0-9]+$")
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -96,6 +100,21 @@ def require_file(path: Path, label: str) -> None:
         raise ValueError(f"{label} is missing or empty: {path}")
 
 
+def validate_rsid_map(path: Path) -> None:
+    rows = read_tsv(path)
+    if not rows or not RSID_MAP_COLUMNS.issubset(rows[0]):
+        raise ValueError(f"rsID map is empty or has an invalid schema: {path}")
+    variant_ids = [row["variant_id"] for row in rows]
+    if any(not value for value in variant_ids) or len(set(variant_ids)) != len(variant_ids):
+        raise ValueError(f"rsID map contains an empty or duplicate variant_id: {path}")
+    statuses = {row["rsid_status"] for row in rows}
+    if not statuses.issubset(RSID_STATUSES):
+        raise ValueError(f"rsID map contains an unsupported status: {path}")
+    matched = [row for row in rows if row["rsid_status"] == "matched"]
+    if not matched or any(not RSID.fullmatch(row["rsid"]) for row in matched):
+        raise ValueError(f"rsID map has no valid uniquely matched rsID: {path}")
+
+
 def inventory(config: dict[str, Path], level: str) -> tuple[list[dict[str, str]], dict[str, Path]]:
     catalog = load_catalog(config["catalog"])
     files: dict[str, Path] = {}
@@ -122,9 +141,7 @@ def inventory(config: dict[str, Path], level: str) -> tuple[list[dict[str, str]]
     if level == "analysis":
         for row in catalog:
             mapping = find_map(config["rsid_map_dir"], row["trait"])
-            fields = set(header(mapping))
-            if not {"variant_id", "rsid", "rsid_status"}.issubset(fields):
-                raise ValueError(f"rsID map has an invalid schema: {mapping}")
+            validate_rsid_map(mapping)
     return catalog, files
 
 

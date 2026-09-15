@@ -33,7 +33,10 @@ def main() -> None:
             write_gzip(metabolic / row["accession"] / f"{row['accession']}.tsv.gz", metabolic_columns)
             maps.mkdir(parents=True, exist_ok=True)
             suffix = "_rsid_map.tsv" if index % 2 == 0 else "_forward_ivs_rsid_b157.tsv"
-            (maps / f"{row['trait']}{suffix}").write_text("variant_id\trsid\trsid_status\n", encoding="utf-8", newline="\n")
+            (maps / f"{row['trait']}{suffix}").write_text(
+                "variant_id\trsid\trsid_status\n1_100_A_G\trs100\tmatched\n",
+                encoding="utf-8", newline="\n",
+            )
 
         pgc_columns = ["CHR", "BP", "SNP", "A1", "A2", "OR", "SE", "P", "Nca", "Nco", "FRQ_A_test", "FRQ_U_test"]
         fg_columns = ["#chrom", "pos", "ref", "alt", "rsids", "nearest_genes", "pval", "mlogp", "beta", "sebeta", "af_alt", "af_alt_cases", "af_alt_controls"]
@@ -71,6 +74,14 @@ def main() -> None:
         sources = list(csv.DictReader((out_dir / "source_manifest.local.tsv").open(encoding="utf-8"), delimiter="\t"))
         assert len(exposures) == 249 and len(sources) == 250
         assert sources[-1]["trait"] == "Major_depressive_disorder" and sources[-1]["source_type"] == "mdd"
+
+        first_map = maps / f"{catalog[0]['trait']}_rsid_map.tsv"
+        first_map.write_text("variant_id\trsid\trsid_status\n", encoding="utf-8", newline="\n")
+        invalid = subprocess.run(
+            command + ["check", "--config", str(config), "--level", "analysis"],
+            cwd=ROOT, capture_output=True, text=True,
+        )
+        assert invalid.returncode != 0 and "empty or has an invalid schema" in invalid.stderr
     print("PASS: source preflight and full-manifest construction")
 
 

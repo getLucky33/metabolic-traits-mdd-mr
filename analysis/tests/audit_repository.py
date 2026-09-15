@@ -119,24 +119,26 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.17" not in description or "version: 0.2.17" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.17")
+if "Version: 0.2.18" not in description or "version: 0.2.18" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.18")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
 verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if ("Version 0.2.17" not in readme or
-        "Release v0.2.17" not in workflow or
-        "## v0.2.17 release verification" not in verification):
+if ("Version 0.2.18" not in readme or
+        "Release v0.2.18" not in workflow or
+        "## v0.2.18 release verification" not in verification):
     errors.append("release version is not synchronized across repository documentation")
 for rel in (
     "DATA_SOURCES.md",
     "analysis/config/local_paths.example.tsv",
     "analysis/manifests/metabolic_traits_249.tsv",
     "analysis/prepare_inputs.py",
+    "analysis/scripts/00_map_exposure_rsids.py",
     "analysis/scripts/05a_recover_exposure_variant_n.py",
+    "analysis/tests/test_exposure_rsid_mapping.py",
     "analysis/tests/test_exposure_variant_n.py",
 ):
     if not (ROOT / rel).is_file():
@@ -159,8 +161,9 @@ if catalog_file.is_file():
 for marker in (
     "Choose a reproduction target",
     "Start here for a real-data rerun",
-    "Downloading the public GWAS files alone is insufficient",
+    "Exposure rsID maps can now be generated locally",
     "Aggregate-result audit only",
+    "Generate one map first as the required real-data smoke test",
 ):
     if marker not in readme:
         errors.append(f"README is missing a reproduction-boundary marker: {marker}")
@@ -224,9 +227,9 @@ for forbidden_edge in ('"  RV --> C"', '"  RM --> R"', '"  RM --> L"', '"  F -->
         errors.append(f"Figure 1 contains a forbidden topology edge: {forbidden_edge}")
 if "stage_label" in figure_script or "grid.circle" in figure_script:
     errors.append("Figure 1 must use unnumbered stage headings without circular badges")
-attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact v0.2.17 aggregate release schemas and publication boundary stated in this file."
+attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact aggregate release schemas and publication boundary stated in this file. Version 0.2.18 does not change that payload or boundary."
 if attestation not in access:
-    errors.append("responsible-author v0.2.17 release-scope attestation is missing")
+    errors.append("responsible-author aggregate release-scope attestation is missing")
 manifest_sha256 = hashlib.sha256(
     (ROOT / "data" / "derived" / "data_manifest.tsv").read_bytes()
 ).hexdigest()
@@ -235,7 +238,7 @@ if f"`{manifest_sha256}`" not in access:
 transition_markers = (
     "OPEN" + "/PENDING",
     "subject to renewed responsible-author approval",
-    "Pending v0.2.17",
+    "Pending v0.2.18",
 )
 for name, document in (
         ("README.md", readme), ("analysis/WORKFLOW.md", workflow),
@@ -253,6 +256,19 @@ if re.search(r"(?i)[A-Z]:[\\/]", variant_n_script):
 prepare_script = (ROOT / "analysis" / "prepare_inputs.py").read_text(encoding="utf-8")
 if not re.search(r'METABOLIC_COLUMNS\s*=\s*\{[^}]*["\']n["\']', prepare_script, re.S):
     errors.append("source preflight must require the metabolic GWAS n field")
+for marker in ("validate_rsid_map", "RSID_STATUSES", "no valid uniquely matched rsID"):
+    if marker not in prepare_script:
+        errors.append(f"source preflight is missing rsID-map content validation: {marker}")
+mapping_script = (ROOT / "analysis" / "scripts" / "00_map_exposure_rsids.py").read_text(encoding="utf-8")
+for marker in (
+    "EXPECTED_DBSNP_MD5", "--traits", "--batch-size", "--p-threshold", "allele_set_match",
+    "no_allele_match", "no_dbsnp_entry", "source_decompressed_sha256", "map_sha256",
+):
+    if marker not in mapping_script:
+        errors.append(f"exposure rsID mapper is missing required behavior: {marker}")
+workflow_yaml = (ROOT / ".github" / "workflows" / "reproduce.yml").read_text(encoding="utf-8")
+if "python analysis/tests/test_exposure_rsid_mapping.py" not in workflow_yaml:
+    errors.append("GitHub Actions does not run the exposure rsID-mapping test")
 robustness_script = (ROOT / "analysis" / "scripts" / "05_run_robustness.R").read_text(encoding="utf-8")
 if ("Formal robustness mode requires --exposure-n-file" not in robustness_script or
         "source_variant_specific" not in robustness_script or

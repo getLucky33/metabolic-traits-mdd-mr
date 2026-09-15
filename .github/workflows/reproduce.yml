@@ -19,6 +19,8 @@ jobs:
         run: python analysis/tests/audit_repository.py
       - name: Test source preflight and manifest construction
         run: python analysis/tests/test_prepare_inputs.py
+      - name: Test exposure rsID mapping
+        run: python analysis/tests/test_exposure_rsid_mapping.py
       - name: Test variant-specific exposure sample-size recovery
         run: python analysis/tests/test_exposure_variant_n.py
       - name: Parse analysis R scripts
