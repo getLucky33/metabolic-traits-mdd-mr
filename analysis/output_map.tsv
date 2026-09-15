@@ -11,7 +11,7 @@ prepare_inputs.py	source_manifest.local.tsv; exposure_manifest.local.tsv	Fail-cl
 06_run_finngen.R	finngen_r13_mr_results.tsv; finngen_r13_mr_methods.tsv; finngen_r13_admission_and_tool_loss.tsv; finngen_r13_admission_qc.tsv	FinnGen cross-outcome comparison and complete tool-loss accounting
 07_run_coloc_abf.R	loci_coloc_results.tsv; loci_status.tsv; loci_flow.tsv; loci_final_snps.tsv	ABF posterior grid and full locus flow
 08_classify_coloc.R	loci_classification.tsv; class_summary.tsv; lead_proxy_qc.tsv	Five-label locus classification; Figure 4
-09_summarise_instrument_qc.R	instrument_strength_qc.tsv	F, approximate R2, MAF, I2GX/NOME and available LD-panel QC
+09_summarise_instrument_qc.R	instrument_strength_qc.tsv	F, approximate R2, MAF, I2GX/NOME and complete 249-trait LD-panel QC
 10_build_locus_manifest.R	locus_manifest.tsv	Anchor-clustered GRCh38 locus windows
 11_extract_locus_windows.R	*_window.tsv; locus_window_extraction_qc.tsv	Prepared rsID-mapped regional exposure inputs
 released_aggregate_reference	forward_screen_249.tsv; forward_noukbb_15.tsv; reverse_screen_main_249.tsv; reverse_screen_noukbb_249.tsv; presso_sensitivity_15.tsv; steiger_directionality_15.tsv; exposure_sample_size_qc_15.tsv; coloc_*; integrated_mechanism_evidence.tsv; finngen_*; susie_*	Path-free central result audit, candidate robustness and directionality QC, and colocalization classification replay

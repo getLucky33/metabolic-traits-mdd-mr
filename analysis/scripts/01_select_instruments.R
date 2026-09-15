@@ -105,7 +105,11 @@ for (i in seq_len(nrow(manifest))) {
     source_sha256 = sha256_file(row$source_file)
   )
 }
-data.table::fwrite(data.table::rbindlist(qc), file.path(out_dir, "instrument_selection_qc.tsv"), sep = "\t")
+data.table::fwrite(
+  data.table::rbindlist(qc),
+  file.path(out_dir, "instrument_selection_qc.tsv"),
+  sep = "\t", eol = "\n"
+)
 write_run_metadata(out_dir, "instrument_selection", list(manifest = manifest_file), list(
   p_common = p_common, p_rare = p_rare, rare_maf = rare_maf,
   clump_r2 = clump_r2, clump_kb = clump_kb, f_min = f_min

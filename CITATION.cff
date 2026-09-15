@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the associated manuscript and the exact archived repository version used."
 title: "Reproducibility code for circulating metabolic traits and major depressive disorder"
 type: software
-version: 0.2.18
-date-released: 2026-09-15
+version: 0.2.19
+date-released: 2026-09-16
 repository-code: "https://github.com/getLucky33/metabolic-traits-mdd-mr"
 authors:
   - family-names: Wang

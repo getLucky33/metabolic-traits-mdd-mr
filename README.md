@@ -2,7 +2,7 @@
 
 [![reproduce](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml/badge.svg)](https://github.com/getLucky33/metabolic-traits-mdd-mr/actions/workflows/reproduce.yml)
 
-Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.18 adds deterministic, allele-validated generation of the 249 exposure `variant_id`-to-rsID maps from the downloaded meta_EUR files and dbSNP build 157. Released aggregate results are unchanged.
+Reproducibility code for the Scientific Reports manuscript by Zhouyi Wang and Qingmei Liu. Version 0.2.19 completes the 249-trait LD-panel selection-stage QC and propagates the observed missing counts, eligible counts and missing fractions into the instrument-strength table. MR estimates and inferential classifications are unchanged.
 
 ## Choose a reproduction target
 
@@ -97,7 +97,7 @@ The released code covers:
 - single-causal-variant `coloc.abf` under `p12={1e-6,5e-6,1e-5,1e-4}`; and
 - fail-closed locus status reporting, lead/proxy QC, MHC window-overlap exclusion and the locked five-label colocalization classification.
 
-`data/derived/instrument_strength_qc.tsv` reports all 249 traits with machine and display names, instrument counts, minimum/median F, cumulative approximate standardized-trait R², MAF quantiles and I²GX. I²GX is calculated as `max(0, (QX-(K-1))/QX)`, where `QX` is the inverse-variance-weighted heterogeneity statistic for SNP-exposure estimates. The `nome_i2gx_ge_0_90` field is a diagnostic flag, not proof that MR-Egger is unbiased. Selection-stage LD-panel denominators were not retained for all 249 frozen runs, so the corresponding missingness fields are `NA` with an explicit reason rather than reconstructed from final IVs.
+`data/derived/instrument_strength_qc.tsv` reports all 249 traits with machine and display names, instrument counts, minimum/median F, cumulative approximate standardized-trait R², MAF quantiles, I²GX and selection-stage LD-panel coverage. I²GX is calculated as `max(0, (QX-(K-1))/QX)`, where `QX` is the inverse-variance-weighted heterogeneity statistic for SNP-exposure estimates. The `nome_i2gx_ge_0_90` field is a diagnostic flag, not proof that MR-Egger is unbiased. The companion `instrument_selection_ld_panel_qc_249.tsv` records the autosomal biallelic candidate count, count represented in the 1KG EUR panel and count absent from that panel for every trait. Across 15,105,492 eligible candidate rows, 961,597 (6.37%) were absent; trait-specific fractions ranged from 2.79% to 16.72% (median 6.36%). These counts were recomputed from the pre-clumping mapped candidate files and the registered panel, not inferred from final instruments.
 
 Frozen parameters are listed in `analysis/config/parameters.tsv`. The mapping between the portable modules and the analysis-time source scripts, including source SHA-256 hashes, is in `analysis/provenance.tsv`.
 
@@ -119,7 +119,7 @@ Released audit tables include:
 
 These tables permit auditing of the reported results. Recomputing the integrated-evidence and SuSiE stages still requires unreleased regional data, LD matrices and author credible-set inputs.
 
-In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the unchanged aggregate-only schema boundary are recorded in `data/ACCESS.md`; Zhouyi Wang confirmed the responsible-author attestation for this boundary on 2026-09-14. Version 0.2.18 changes code and documentation only.
+In `coloc_status.tsv`, `main` and `noUKBB` are the two outcome analyses; rows labelled `classification` preserve the frozen classification-admission record and are not a third GWAS outcome. The locus manifest releases lead rsID/position identifiers and window boundaries, but not regional SNP association statistics. Provider terms and the aggregate-only schema boundary are recorded in `data/ACCESS.md`. Version 0.2.19 adds only trait-level LD-panel selection counts and the corresponding completed instrument-QC fields; it does not add variant-level rows or change MR estimates.
 
 The FinnGen analysis is a cross-outcome comparison, not an independent replication of the PGC major-depression phenotype. Directional concordance does not establish a shared causal mechanism. The single-variant ABF model is not a substitute for multi-signal fine-mapping.
 

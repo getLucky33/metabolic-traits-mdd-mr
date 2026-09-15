@@ -1,6 +1,14 @@
 # Verification record
 
-Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 clarified the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Version 0.2.16 added a candidate-level leave-one-out summary. Version 0.2.17 added complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for Steiger sensitivity analysis. Version 0.2.18 adds deterministic exposure rsID-map generation and stronger map-content preflight. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+Verification history: real-data one-trait checks were completed on 2026-09-06; v0.2.3, v0.2.4 and v0.2.5 local release checks were completed on 2026-09-07; v0.2.6, v0.2.7 and v0.2.8 local release checks were completed on 2026-09-08; v0.2.9, v0.2.10, v0.2.11 and v0.2.12 local release checks were completed on 2026-09-09. Versions 0.2.13 and 0.2.14 were checked locally and in clean GitHub Actions environments on 2026-09-11. Version 0.2.15 clarified the documented MR-PRESSO, reporting-group, ABF-classification and integrated-assessment rules. Version 0.2.16 added a candidate-level leave-one-out summary. Version 0.2.17 added complete candidate-level MR-PRESSO reporting fields and source-variant sample-size recovery for Steiger sensitivity analysis. Version 0.2.18 added deterministic exposure rsID-map generation and stronger map-content preflight. Version 0.2.19 completes the 249-trait LD-panel selection-stage QC. Runtime: R 4.5.1 on Windows 10 x64 using the recorded environment.
+
+## v0.2.19 release verification (2026-09-16)
+
+- The registered pre-clumping candidate files were rescanned against the same 1KG EUR panel used for instrument selection. QC-only mode does not run PLINK and does not alter final-instrument files.
+- The resulting table contains 249 unique traits. For every row, `in_ld_panel + ld_panel_missing = autosomal_biallelic`; the aggregate counts are 15,105,492 eligible candidate rows and 961,597 absent from the panel.
+- Trait-specific missing fractions range from 2.79% to 16.72% (median 6.36%). Nine retained historical trait summaries agree exactly with the recomputed counts.
+- `instrument_strength_qc.tsv` now contains finite missing counts, eligible counts and fractions for all 249 traits. Its other 14 fields are unchanged from v0.2.18.
+- The released tables contain trait-level counts only, without variant identifiers or source association rows. MR estimates, candidate selection and inferential classifications are unchanged.
 
 ## v0.2.18 release verification (2026-09-15)
 

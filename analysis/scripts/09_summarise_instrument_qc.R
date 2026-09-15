@@ -83,6 +83,17 @@ if (!is.null(selection_qc_file)) {
   selection <- data.table::fread(assert_file(selection_qc_file, "instrument-selection QC"))
   assert_columns(selection, c("trait", "autosomal_biallelic", "in_ld_panel", "ld_panel_missing"),
                  "instrument-selection QC")
+  if (nrow(selection) != expected_traits ||
+      data.table::uniqueN(selection$trait) != expected_traits) {
+    stop("Instrument-selection QC requires exactly ", expected_traits, " unique traits")
+  }
+  if (anyNA(selection[, .(autosomal_biallelic, in_ld_panel, ld_panel_missing)]) ||
+      any(selection$autosomal_biallelic <= 0L) ||
+      any(selection$in_ld_panel < 0L) ||
+      any(selection$ld_panel_missing < 0L) ||
+      any(selection$in_ld_panel + selection$ld_panel_missing != selection$autosomal_biallelic)) {
+    stop("Instrument-selection QC contains invalid or internally inconsistent LD-panel counts")
+  }
   selection <- selection[, .(
     trait_id = trait, ld_panel_missing_n = as.integer(ld_panel_missing),
     ld_panel_eligible_n = as.integer(autosomal_biallelic),
@@ -90,8 +101,12 @@ if (!is.null(selection_qc_file)) {
   )]
   out[, c("ld_panel_missing_n", "ld_panel_eligible_n", "ld_panel_missing_fraction") := NULL]
   out <- merge(out, selection, by = "trait_id", all.x = TRUE)
+  if (anyNA(out$ld_panel_missing_n) || anyNA(out$ld_panel_eligible_n) ||
+      anyNA(out$ld_panel_missing_fraction)) {
+    stop("Instrument-selection QC does not map completely to the IV manifest")
+  }
   out[!is.na(ld_panel_missing_n),
-      ld_panel_missingness_note := "Computed from the instrument-selection QC table"]
+      ld_panel_missingness_note := "Computed from the complete 249-trait LD-panel selection QC table"]
 }
 
 data.table::setcolorder(out, c(
@@ -102,4 +117,4 @@ data.table::setcolorder(out, c(
   "ld_panel_missing_fraction", "ld_panel_missingness_note"
 ))
 dir.create(dirname(out_file), recursive = TRUE, showWarnings = FALSE)
-data.table::fwrite(out, out_file, sep = "\t", na = "NA", quote = FALSE)
+data.table::fwrite(out, out_file, sep = "\t", na = "NA", quote = FALSE, eol = "\n")

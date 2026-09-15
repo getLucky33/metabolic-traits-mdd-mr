@@ -119,17 +119,17 @@ for row in manifest_rows:
 
 description = (ROOT / "DESCRIPTION").read_text(encoding="utf-8")
 citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
-if "Version: 0.2.18" not in description or "version: 0.2.18" not in citation:
-    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.18")
+if "Version: 0.2.19" not in description or "version: 0.2.19" not in citation:
+    errors.append("DESCRIPTION and CITATION.cff must both declare version 0.2.19")
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 workflow = (ROOT / "analysis" / "WORKFLOW.md").read_text(encoding="utf-8")
 verification = (ROOT / "analysis" / "VERIFICATION.md").read_text(encoding="utf-8")
 access = (ROOT / "data" / "ACCESS.md").read_text(encoding="utf-8")
 figure_script = (ROOT / "scripts" / "make_figures.R").read_text(encoding="utf-8")
-if ("Version 0.2.18" not in readme or
-        "Release v0.2.18" not in workflow or
-        "## v0.2.18 release verification" not in verification):
+if ("Version 0.2.19" not in readme or
+        "Release v0.2.19" not in workflow or
+        "## v0.2.19 release verification" not in verification):
     errors.append("release version is not synchronized across repository documentation")
 for rel in (
     "DATA_SOURCES.md",
@@ -227,7 +227,7 @@ for forbidden_edge in ('"  RV --> C"', '"  RM --> R"', '"  RM --> L"', '"  F -->
         errors.append(f"Figure 1 contains a forbidden topology edge: {forbidden_edge}")
 if "stage_label" in figure_script or "grid.circle" in figure_script:
     errors.append("Figure 1 must use unnumbered stage headings without circular badges")
-attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the exact aggregate release schemas and publication boundary stated in this file. Version 0.2.18 does not change that payload or boundary."
+attestation = "**Responsible-author attestation:** CONFIRMED by Zhouyi Wang on 2026-09-14 for the aggregate-only publication boundary stated in this file. Version 0.2.19 adds trait-level selection counts without variant identifiers and remains within that boundary."
 if attestation not in access:
     errors.append("responsible-author aggregate release-scope attestation is missing")
 manifest_sha256 = hashlib.sha256(
@@ -238,7 +238,7 @@ if f"`{manifest_sha256}`" not in access:
 transition_markers = (
     "OPEN" + "/PENDING",
     "subject to renewed responsible-author approval",
-    "Pending v0.2.18",
+    "Pending v0.2.19",
 )
 for name, document in (
         ("README.md", readme), ("analysis/WORKFLOW.md", workflow),
@@ -426,6 +426,30 @@ for field, expected in expected_tool_totals.items():
         errors.append(f"FinnGen {field} total differs from {expected}")
 
 instrument_qc = read_tsv("instrument_strength_qc.tsv")
+selection_qc = read_tsv("instrument_selection_ld_panel_qc_249.tsv")
+if (tsv_header("instrument_selection_ld_panel_qc_249.tsv") !=
+        ["trait", "autosomal_biallelic", "in_ld_panel", "ld_panel_missing"]):
+    errors.append("LD-panel selection QC must preserve its four-column aggregate schema")
+if len(selection_qc) != 249 or len({row["trait"] for row in selection_qc}) != 249:
+    errors.append("LD-panel selection QC must contain 249 unique traits")
+selection_by_trait = {row["trait"]: row for row in selection_qc}
+selection_counts_valid = True
+for row in selection_qc:
+    try:
+        eligible = int(row["autosomal_biallelic"])
+        in_panel = int(row["in_ld_panel"])
+        missing = int(row["ld_panel_missing"])
+    except (KeyError, TypeError, ValueError):
+        selection_counts_valid = False
+        continue
+    if eligible <= 0 or in_panel < 0 or missing < 0 or in_panel + missing != eligible:
+        selection_counts_valid = False
+if not selection_counts_valid:
+    errors.append("LD-panel selection QC contains invalid or internally inconsistent counts")
+if selection_counts_valid and (
+        sum(int(row["autosomal_biallelic"]) for row in selection_qc) != 15105492 or
+        sum(int(row["ld_panel_missing"]) for row in selection_qc) != 961597):
+    errors.append("LD-panel selection QC aggregate counts differ from the verified 249-trait run")
 if len(instrument_qc) != 249 or len({row["trait_id"] for row in instrument_qc}) != 249 or \
         len({row["trait_display"] for row in instrument_qc}) != 249:
     errors.append("instrument-strength QC must map 249 unique machine and display names")
@@ -434,8 +458,22 @@ if min(float(row["min_f"]) for row in instrument_qc) < 10:
 candidate_qc = [row for row in instrument_qc if row["screen_level"] == "bonferroni_hit"]
 if len(candidate_qc) != 15 or any(not math.isfinite(float(row["i2gx"])) for row in candidate_qc):
     errors.append("all 15 forward candidates require finite I2GX values")
-if any(row["ld_panel_missing_fraction"] != "NA" or not row["ld_panel_missingness_note"] for row in instrument_qc):
-    errors.append("unavailable full-family LD-panel missingness must remain explicit NA")
+for row in instrument_qc:
+    source = selection_by_trait.get(row["trait_id"])
+    try:
+        missing = int(row["ld_panel_missing_n"])
+        eligible = int(row["ld_panel_eligible_n"])
+        fraction = float(row["ld_panel_missing_fraction"])
+        source_missing = int(source["ld_panel_missing"]) if source else -1
+        source_eligible = int(source["autosomal_biallelic"]) if source else -1
+    except (KeyError, TypeError, ValueError):
+        errors.append(f"instrument-strength LD-panel QC is nonnumeric: {row.get('trait_id', '<missing>')}")
+        continue
+    if (missing != source_missing or eligible != source_eligible or eligible <= 0 or
+            not math.isfinite(fraction) or abs(fraction - missing / eligible) > 1e-14 or
+            row["ld_panel_missingness_note"] !=
+            "Computed from the complete 249-trait LD-panel selection QC table"):
+        errors.append(f"instrument-strength LD-panel QC differs from its selection source: {row['trait_id']}")
 
 pleio = read_tsv("broad_pleiotropy_sensitivity_15.tsv")
 if len(pleio) != 15:
